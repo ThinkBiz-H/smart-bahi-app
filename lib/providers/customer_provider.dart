@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class Customer {
@@ -80,16 +79,31 @@ class CustomerProvider extends ChangeNotifier {
     final index = _people.indexWhere((p) => p.name == name);
     if (index == -1) return;
 
-    _people[index].transactions.add(transaction);
+    _people[index].transactions.add({
+      "amount": transaction["amount"],
+      "type": transaction["type"],
+      "time": DateTime.now().toIso8601String(), // ⭐ always save time
+    });
+
     notifyListeners();
   }
 
   List<Map<String, dynamic>> getTransactions(String name) {
     final customer = _people.firstWhere((p) => p.name == name);
+
+    /// ⭐ OLD DATA AUTO FIX (time inject)
+    for (var tx in customer.transactions) {
+      tx.putIfAbsent("time", () => DateTime.now().toIso8601String());
+    }
+
     return customer.transactions;
   }
 
   Customer getCustomer(String name) {
-    return _people.firstWhere((p) => p.name == name);
+    return _people.firstWhere(
+      (p) => p.name == name,
+      orElse: () =>
+          Customer(name: name, mobile: "", address: "", type: "CUSTOMER"),
+    );
   }
 }

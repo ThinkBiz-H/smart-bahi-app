@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../../profile/screens/multi_device_screen.dart';
 import 'package:provider/provider.dart';
@@ -28,22 +27,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _tile(Icons.language, "Language", "English", _chooseLanguage),
           _tile(Icons.phone, "Change Mobile Number", "", _changeNumber),
 
-          _switchTile(
-            Icons.backup,
-            "Backup Photos",
-            backupEnabled,
-            (val) => setState(() => backupEnabled = val),
-          ),
+          // _switchTile(
+          //   Icons.backup,
+          //   "Backup Photos",
+          //   backupEnabled,
+          //   (val) => setState(() => backupEnabled = val),
+          // ),
 
-          _tile(Icons.restore, "Restore Photos", "", _restorePhotos),
-
-          _tile(Icons.security, "Data Security Checkup", "", () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MultiDeviceScreen()),
-            );
-          }),
-
+          // _tile(Icons.restore, "Restore Photos", "", _restorePhotos),
+          // _tile(Icons.security, "Data Security Checkup", "", () {
+          //   Navigator.push(
+          //     context,
+          //     MaterialPageRoute(builder: (_) => const MultiDeviceScreen()),
+          //   );
+          // }),
           _switchTile(
             Icons.lock,
             "App Lock / PIN",
@@ -145,25 +142,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _restorePhotos() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Restore Photos"),
-        content: const Text("Restore backup photos?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Restore"),
-          ),
-        ],
-      ),
-    );
-  }
+  // void _restorePhotos() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (_) => AlertDialog(
+  //       title: const Text("Restore Photos"),
+  //       content: const Text("Restore backup photos?"),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text("Cancel"),
+  //         ),
+  //         ElevatedButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text("Restore"),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   void _logoutDialog() {
     showDialog(

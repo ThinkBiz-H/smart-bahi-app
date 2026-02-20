@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/customer_provider.dart';
@@ -122,7 +120,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     itemBuilder: (context, index) {
                       final t = transactions[index];
                       final isGiven = t['type'] == 'GIVEN';
-                      final DateTime d = t['date'];
+                      final DateTime d =
+                          DateTime.tryParse(t['time'] ?? "") ?? DateTime.now();
                       final note = t['note'] ?? "";
 
                       return Align(
