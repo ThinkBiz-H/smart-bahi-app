@@ -40,7 +40,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.1.2
-  pdf: ^3.10.7
+  pdf: ^3.11.3
   printing: ^5.12.0
   share_plus: ^7.2.1
   url_launcher: ^6.2.5
@@ -72,7 +72,12 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/main-screen.jpeg
+    # - assets/images/main-screen.jpeg
+    - assets/images/main-screen1.png
+    - assets/pdf/wallet.png
+    - assets/pdf/arrow_down.png
+    - assets/pdf/arrow_up.png
+    - assets/pdf/logo.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
