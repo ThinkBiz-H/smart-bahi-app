@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 
 class AddCustomerScreen extends StatefulWidget {
@@ -68,7 +66,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: selectedType == 0
-                            ? const Color(0xFF1E8E3E)
+                            ? const Color(0xFF0C2752)
                             : Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -93,7 +91,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: selectedType == 1
-                            ? const Color(0xFF1E8E3E)
+                            ? const Color(0xFF0C2752)
                             : Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -120,7 +118,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E8E3E),
+                  backgroundColor: const Color(0xFF0C2752),
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 onPressed: save,

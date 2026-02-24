@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'add_item_screen.dart';
@@ -158,7 +157,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
               icon: const Icon(Icons.add),
               label: const Text("Add Item"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: const Color(0xFF0C2752),
                 minimumSize: const Size(double.infinity, 45),
               ),
             ),
@@ -178,7 +177,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: const Color(0xFF0C2752),
                     minimumSize: const Size(double.infinity, 50),
                   ),
                   onPressed: items.isEmpty

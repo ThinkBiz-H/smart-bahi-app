@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/stock_item.dart';
@@ -23,7 +22,7 @@ class _StockScreenState extends State<StockScreen> {
 
       /// ➕ ADD ITEM BUTTON
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF0C2752),
         child: const Icon(Icons.add),
         onPressed: () async {
           await Navigator.push(

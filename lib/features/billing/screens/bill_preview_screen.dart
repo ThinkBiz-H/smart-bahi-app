@@ -1,5 +1,3 @@
-
-
 //MAIN BILL SECTION
 
 import 'package:flutter/material.dart';
@@ -302,7 +300,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: const Color(0xFF0C2752),
                     minimumSize: const Size(double.infinity, 50),
                   ),
                   onPressed: saveBill,

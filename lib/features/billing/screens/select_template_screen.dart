@@ -75,6 +75,9 @@ class _SelectTemplateScreenState extends State<SelectTemplateScreen> {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0C2752),
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,

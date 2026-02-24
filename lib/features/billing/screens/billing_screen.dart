@@ -38,7 +38,7 @@ class BillingScreen extends StatelessWidget {
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                      backgroundColor: const Color(0xFF0C2752),
                     ),
                     onPressed: () {
                       Navigator.push(

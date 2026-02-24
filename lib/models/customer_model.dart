@@ -1,19 +1,28 @@
-class CustomerModel {
-  final String name;
-  final List<Map<String, dynamic>> transactions;
+class Customer {
+  String name;
+  String mobile;
+  String address;
+  String type; // CUSTOMER / SUPPLIER
+  bool smsEnabled; // ⭐⭐⭐ NEW FIELD
+  List<Map<String, dynamic>> transactions = [];
 
-  CustomerModel({required this.name, List<Map<String, dynamic>>? transactions})
-    : transactions = transactions ?? [];
+  Customer({
+    required this.name,
+    required this.mobile,
+    required this.address,
+    required this.type,
+    this.smsEnabled = false, // ⭐ default OFF
+  });
 
   double get balance {
-    double total = 0;
+    double b = 0;
     for (var t in transactions) {
       if (t['type'] == 'GIVEN') {
-        total += t['amount'];
+        b += t['amount'];
       } else {
-        total -= t['amount'];
+        b -= t['amount'];
       }
     }
-    return total;
+    return b;
   }
 }

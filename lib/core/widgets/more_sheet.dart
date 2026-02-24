@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../../features/account/screens/accounts_screen.dart'; // ⭐ FIXED
 import '../../features/profile/screens/profile_screen.dart';
@@ -98,10 +97,15 @@ class MoreSheet extends StatelessWidget {
       onTap: onTap,
       child: Column(
         children: [
+          // CircleAvatar(
+          //   radius: 26,
+          //   backgroundColor: Colors.green.shade50,
+          //   child: Icon(icon, color: Colors.green),
+          // ),
           CircleAvatar(
             radius: 26,
-            backgroundColor: Colors.green.shade50,
-            child: Icon(icon, color: Colors.green),
+            backgroundColor: const Color(0xFF0C2752),
+            child: Icon(icon, color: Colors.white),
           ),
           const SizedBox(height: 6),
           Text(

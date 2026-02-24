@@ -162,7 +162,7 @@ class CustomerStatementScreen extends StatelessWidget {
               icon: const Icon(Icons.download),
               label: const Text("Download"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: const Color(0xFF0C2752),
                 padding: const EdgeInsets.all(14),
               ),
               onPressed: () {},

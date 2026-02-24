@@ -193,7 +193,9 @@ class AccountsScreen extends StatelessWidget {
                   "Download Backup",
                   style: TextStyle(fontSize: 18),
                 ),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0C2752),
+                ),
                 onPressed: () async {
                   // Provider → PDF data convert
                   final customerList = customers

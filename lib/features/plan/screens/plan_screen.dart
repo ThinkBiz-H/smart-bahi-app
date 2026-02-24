@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../../../core/services/payment_service.dart';
 
@@ -102,7 +101,7 @@ class _PlanScreenState extends State<PlanScreen> {
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: const Color(0xFF0C2752),
                 minimumSize: const Size(double.infinity, 55),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -147,7 +146,7 @@ class _PlanScreenState extends State<PlanScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected ? Colors.green : Colors.grey.shade300,
+            color: isSelected ? const Color(0xFF0C2752) : Colors.grey.shade300,
             width: 2,
           ),
           color: Colors.grey.shade100,

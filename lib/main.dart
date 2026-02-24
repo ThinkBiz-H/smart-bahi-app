@@ -75,32 +75,25 @@
 //     );
 //   }
 // }
-
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-import 'features/customer/screens/customer_list_screen.dart';
-import 'providers/customer_provider.dart';
-// import 'core/widgets/app_bottom_nav.dart';
-import 'core/providers/language_provider.dart';
-import 'core/screens/splash_screen.dart';
-// ⭐ NEW IMPORTS (STATEMENT SCREENS)
 
+import 'features/customer/screens/customer_list_screen.dart';
+import 'features/customer/screens/customer_sms_settings_screen.dart';
 import 'features/supplier/screens/supplier_statement_screen.dart';
 
-// ⭐ STOCK MODEL
+import 'providers/customer_provider.dart';
+import 'core/providers/language_provider.dart';
+import 'core/screens/splash_screen.dart';
 import 'features/stock/models/stock_item.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  /// ⭐ INIT HIVE
   await Hive.initFlutter();
-
-  /// ⭐ REGISTER ADAPTERS
   Hive.registerAdapter(StockItemAdapter());
 
-  /// ⭐ OPEN BOXES
   await Future.wait([
     Hive.openBox('bills'),
     Hive.openBox<StockItem>('stock'),
@@ -124,11 +117,8 @@ class MyApp extends StatelessWidget {
         builder: (context, langProvider, _) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-
-            /// 🌍 LANGUAGE
             locale: langProvider.locale,
 
-            /// 🎨 THEME
             theme: ThemeData(
               primarySwatch: Colors.green,
               scaffoldBackgroundColor: const Color(0xfff6f6f6),
@@ -136,26 +126,21 @@ class MyApp extends StatelessWidget {
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,
                 elevation: 0,
-                centerTitle: false,
-              ),
-              elevatedButtonTheme: ElevatedButtonThemeData(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
               ),
             ),
 
-            /// ⭐ ROUTES ADDED HERE
             routes: {
               "/supplierStatement": (_) => const SupplierStatementScreen(),
               "/customerList": (_) => const CustomerListScreen(),
+
+              "/smsSettings": (context) {
+                final name =
+                    ModalRoute.of(context)!.settings.arguments as String;
+                return CustomerSmsSettingsScreen(customerName: name);
+              },
             },
+
             home: const SplashScreen(),
-            // home: const AppBottomNav(),
           );
         },
       ),
