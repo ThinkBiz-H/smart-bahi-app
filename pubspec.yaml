@@ -77,6 +77,8 @@ flutter:
   assets:
     # - assets/images/main-screen.jpeg
     - assets/images/main-screen1.png
+    - assets/images/main-screen20.png
+    - assets/images/whatsapp.png
     - assets/pdf/wallet.png
     - assets/pdf/arrow_down.png
     - assets/pdf/arrow_up.png

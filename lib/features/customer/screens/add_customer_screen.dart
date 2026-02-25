@@ -1,143 +1,9 @@
-// import 'package:flutter/material.dart';
-
-// class AddCustomerScreen extends StatefulWidget {
-//   const AddCustomerScreen({super.key});
-
-//   @override
-//   State<AddCustomerScreen> createState() => _AddCustomerScreenState();
-// }
-
-// class _AddCustomerScreenState extends State<AddCustomerScreen> {
-//   final nameController = TextEditingController();
-//   final phoneController = TextEditingController();
-//   final addressController = TextEditingController();
-
-//   int selectedType = 0; // ⭐ 0 = Customer , 1 = Supplier
-
-//   void save() {
-//     if (nameController.text.trim().isEmpty) return;
-
-//     Navigator.pop(context, {
-//       "name": nameController.text.trim(),
-//       "phone": phoneController.text.trim(),
-//       "address": addressController.text.trim(),
-//       "type": selectedType == 0 ? "CUSTOMER" : "SUPPLIER",
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text("Add Customer")),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16),
-//         child: Column(
-//           children: [
-//             /// NAME
-//             TextField(
-//               controller: nameController,
-//               decoration: const InputDecoration(labelText: "Customer Name"),
-//             ),
-//             const SizedBox(height: 12),
-
-//             /// PHONE
-//             TextField(
-//               controller: phoneController,
-//               keyboardType: TextInputType.phone,
-//               decoration: const InputDecoration(labelText: "Mobile Number"),
-//             ),
-//             const SizedBox(height: 12),
-
-//             /// ADDRESS
-//             TextField(
-//               controller: addressController,
-//               decoration: const InputDecoration(labelText: "Address"),
-//             ),
-
-//             const SizedBox(height: 20),
-
-//             /// ⭐ CUSTOMER / SUPPLIER SELECTOR
-//             Row(
-//               children: [
-//                 Expanded(
-//                   child: GestureDetector(
-//                     onTap: () => setState(() => selectedType = 0),
-//                     child: Container(
-//                       padding: const EdgeInsets.symmetric(vertical: 12),
-//                       decoration: BoxDecoration(
-//                         color: selectedType == 0
-//                             ? const Color(0xFF0C2752)
-//                             : Colors.grey.shade200,
-//                         borderRadius: BorderRadius.circular(12),
-//                       ),
-//                       child: Text(
-//                         "Customer",
-//                         textAlign: TextAlign.center,
-//                         style: TextStyle(
-//                           color: selectedType == 0
-//                               ? Colors.white
-//                               : Colors.black,
-//                           fontWeight: FontWeight.bold,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//                 const SizedBox(width: 12),
-//                 Expanded(
-//                   child: GestureDetector(
-//                     onTap: () => setState(() => selectedType = 1),
-//                     child: Container(
-//                       padding: const EdgeInsets.symmetric(vertical: 12),
-//                       decoration: BoxDecoration(
-//                         color: selectedType == 1
-//                             ? const Color(0xFF0C2752)
-//                             : Colors.grey.shade200,
-//                         borderRadius: BorderRadius.circular(12),
-//                       ),
-//                       child: Text(
-//                         "Supplier",
-//                         textAlign: TextAlign.center,
-//                         style: TextStyle(
-//                           color: selectedType == 1
-//                               ? Colors.white
-//                               : Colors.black,
-//                           fontWeight: FontWeight.bold,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-
-//             const Spacer(),
-
-//             /// CONFIRM BUTTON
-//             SizedBox(
-//               width: double.infinity,
-//               child: ElevatedButton(
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: const Color(0xFF0C2752),
-//                   minimumSize: const Size(double.infinity, 50),
-//                 ),
-//                 onPressed: save,
-//                 child: const Text("Confirm"),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../providers/customer_provider.dart';
+import 'package:frontend/providers/customer_provider.dart';
 
 class AddCustomerScreen extends StatefulWidget {
-  final Customer? customer;
+  final dynamic customer;
   final bool isEdit;
 
   const AddCustomerScreen({super.key, this.customer, this.isEdit = false});
@@ -147,75 +13,162 @@ class AddCustomerScreen extends StatefulWidget {
 }
 
 class _AddCustomerScreenState extends State<AddCustomerScreen> {
-  final _nameController = TextEditingController();
-  final _mobileController = TextEditingController();
-  final _addressController = TextEditingController();
+  final nameController = TextEditingController();
+  final mobileController = TextEditingController();
+  final addressController = TextEditingController();
+
+  String selectedType = "CUSTOMER";
 
   @override
   void initState() {
     super.initState();
 
-    /// EDIT MODE PREFILL
-    if (widget.customer != null) {
-      _nameController.text = widget.customer!.name;
-      _mobileController.text = widget.customer!.mobile;
-      _addressController.text = widget.customer!.address;
+    if (widget.isEdit && widget.customer != null) {
+      nameController.text = widget.customer.name;
+      mobileController.text = widget.customer.mobile;
+      addressController.text = widget.customer.address;
+      selectedType = widget.customer.type;
     }
-  }
-
-  void saveCustomer() {
-    final provider = Provider.of<CustomerProvider>(context, listen: false);
-
-    final name = _nameController.text.trim();
-    final mobile = _mobileController.text.trim();
-    final address = _addressController.text.trim();
-
-    if (widget.isEdit) {
-      provider.updateCustomer(
-        widget.customer!.name, // old name
-        name,
-        mobile,
-        address,
-      );
-    } else {
-      provider.addCustomer(name, mobile, address);
-    }
-
-    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<CustomerProvider>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEdit ? "Edit Customer" : "Add Customer"),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           children: [
+            const SizedBox(height: 20),
+
+            /// NAME
             TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: "Name"),
+              controller: nameController,
+              decoration: const InputDecoration(labelText: "Customer Name"),
             ),
+
+            const SizedBox(height: 20),
+
+            /// MOBILE
             TextField(
-              controller: _mobileController,
-              decoration: const InputDecoration(labelText: "Mobile"),
+              controller: mobileController,
               keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(labelText: "Mobile Number"),
             ),
+
+            const SizedBox(height: 20),
+
+            /// ADDRESS
             TextField(
-              controller: _addressController,
+              controller: addressController,
               decoration: const InputDecoration(labelText: "Address"),
             ),
+
+            const SizedBox(height: 30),
+
+            /// ⭐ CUSTOMER / SUPPLIER BUTTONS (OLD STYLE)
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => selectedType = "CUSTOMER"),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: selectedType == "CUSTOMER"
+                            ? const Color(0xFF0C2752)
+                            : Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Text(
+                        "Customer",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: selectedType == "CUSTOMER"
+                              ? Colors.white
+                              : Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => selectedType = "SUPPLIER"),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: selectedType == "SUPPLIER"
+                            ? const Color(0xFF0C2752)
+                            : Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Text(
+                        "Supplier",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: selectedType == "SUPPLIER"
+                              ? Colors.white
+                              : Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
             const Spacer(),
+
+            /// ⭐ BIG CONFIRM BUTTON (OLD STYLE)
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                onPressed: saveCustomer,
-                child: const Text("Save"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0C2752),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                onPressed: () {
+                  if (nameController.text.isEmpty) return;
+
+                  if (widget.isEdit) {
+                    provider.updateCustomer(
+                      widget.customer.name,
+                      nameController.text.trim(),
+                      mobileController.text.trim(),
+                      addressController.text.trim(),
+                    );
+                  } else {
+                    provider.addPerson(
+                      nameController.text.trim(),
+                      mobileController.text.trim(),
+                      addressController.text.trim(),
+                      selectedType,
+                    );
+                  }
+
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  widget.isEdit ? "Update" : "Confirm",
+                  style: const TextStyle(fontSize: 18),
+                ),
               ),
             ),
+
+            const SizedBox(height: 15),
           ],
         ),
       ),
