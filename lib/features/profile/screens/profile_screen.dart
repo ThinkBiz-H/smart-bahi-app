@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'edit_field_screen.dart';
 import 'package:image_picker/image_picker.dart';

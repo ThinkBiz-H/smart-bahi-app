@@ -118,7 +118,6 @@
 // }
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
-// import 'package:telephony/telephony.dart';
 
 class Customer {
   String name;
@@ -205,27 +204,6 @@ class CustomerProvider extends ChangeNotifier {
 
   // ================= SMS FUNCTION =================
 
-  // Future<void> sendSmsIfEnabled(
-  //   Customer customer,
-  //   Map<String, dynamic> tx,
-  // ) async {
-  //   if (!customer.smsEnabled) return;
-
-  //   final amount = tx["amount"];
-  //   final isGiven = tx["type"] == "GIVEN";
-
-  //   String message;
-
-  //   if (isGiven) {
-  //     message =
-  //         "Hi ${customer.name}, you received ₹$amount from me. - SmartBahi";
-  //   } else {
-  //     message =
-  //         "Hi ${customer.name}, you paid ₹$amount. Thank you! - SmartBahi";
-  //   }
-
-  //   await telephony.sendSms(to: customer.mobile, message: message);
-  // }
   Future<void> sendSmsIfEnabled(
     Customer customer,
     Map<String, dynamic> tx,
@@ -265,14 +243,13 @@ class CustomerProvider extends ChangeNotifier {
     final txData = {
       "amount": transaction["amount"],
       "type": transaction["type"],
+      "note": transaction["note"], // ⭐ MOST IMPORTANT
       "time": DateTime.now().toIso8601String(),
     };
 
-    /// SAVE
     customer.transactions.add(txData);
     notifyListeners();
 
-    /// 🔥 AUTO SMS SEND
     await sendSmsIfEnabled(customer, txData);
   }
 
