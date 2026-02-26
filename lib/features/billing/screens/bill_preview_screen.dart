@@ -1,14 +1,13 @@
-//MAIN BILL SECTION
-
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/customer_provider.dart';
 import '../../stock/models/stock_item.dart';
+// import 'add_item_screen.dart';
+import 'create_bill_screen.dart';
 
 class BillPreviewScreen extends StatefulWidget {
   final int? billKey;
-
   final List<Map<String, dynamic>> items;
   final String customerName;
   final String mobile;
@@ -45,15 +44,17 @@ class BillPreviewScreen extends StatefulWidget {
 
 class _BillPreviewScreenState extends State<BillPreviewScreen> {
   bool isPaid = false;
+  bool inventoryPopupShown = false;
 
-  Future<void> saveBill() async {
+  /// ================= SAVE LOGIC =================
+  Future<void> saveBillWithoutNavigation() async {
     final billBox = Hive.box('bills');
-    final stockBox = Hive.box<StockItem>('stock');
     final provider = context.read<CustomerProvider>();
 
     final billData = {
       "customerName": widget.customerName,
       "mobile": widget.mobile,
+      "address": widget.address,
       "billNumber": widget.billNumber,
       "date": widget.billDate.toIso8601String(),
       "items": widget.items,
@@ -66,48 +67,12 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
       "paid": isPaid,
     };
 
-    /// EDIT MODE FIX (duplicate + ledger reverse)
     if (widget.billKey != null) {
-      final oldBill = billBox.get(widget.billKey);
-
-      if ((oldBill['paid'] ?? false) == false) {
-        provider.addTransaction(widget.customerName, {
-          'amount': widget.grandTotal,
-          'note': 'Bill Edited Reverse',
-          'date': DateTime.now(),
-          'type': 'RECEIVED',
-        });
-      }
-
       await billBox.put(widget.billKey, billData);
     } else {
       await billBox.add(billData);
-
-      /// STOCK REDUCE ONLY FOR NEW BILL
-      for (var billItem in widget.items) {
-        try {
-          final stockItem = stockBox.values.firstWhere(
-            (i) => i.name.toLowerCase() == billItem['name'].toLowerCase(),
-          );
-
-          int currentStock = int.tryParse(stockItem.qty) ?? 0;
-          int soldQty = (billItem['qty'] as double).toInt();
-
-          stockItem
-            ..qty = (currentStock - soldQty).toString()
-            ..save();
-        } catch (_) {}
-      }
     }
 
-    /// ensure customer exists
-    try {
-      provider.getCustomer(widget.customerName);
-    } catch (_) {
-      provider.addCustomer(widget.customerName, widget.mobile, widget.address);
-    }
-
-    /// ledger sync
     if (!isPaid) {
       provider.addTransaction(widget.customerName, {
         'amount': widget.grandTotal,
@@ -116,11 +81,139 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
         'type': 'GIVEN',
       });
     }
+  }
 
-    Navigator.popUntil(context, (route) => route.isFirst);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Bill Saved")));
+  Future<void> saveBill() async {
+    await saveBillWithoutNavigation();
+    Navigator.pop(context);
+    Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(widget.billKey != null ? "Bill Updated" : "Bill Saved"),
+      ),
+    );
+  }
+
+  /// ================= POPUP =================
+  void showInventoryPopup() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: Colors.green.shade100,
+                child: const Icon(
+                  Icons.inventory_2,
+                  color: Colors.green,
+                  size: 30,
+                ),
+              ),
+              const SizedBox(height: 15),
+              const Text(
+                "Do you wish to add/update these items in inventory?",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 20),
+
+              ...widget.items.map(
+                (e) => Row(
+                  children: [
+                    Text(e['name']),
+                    const Spacer(),
+                    const Icon(Icons.check_box, color: Colors.green),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        inventoryPopupShown = true;
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                      // onPressed: () async {
+                      //   inventoryPopupShown = true;
+                      //   Navigator.pop(context);
+                      //   await saveBillWithoutNavigation();
+                      //   Navigator.pushReplacement(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //       builder: (_) => const AddItemScreen(),
+                      //     ),
+                      //   );
+                      // },
+                      onPressed: () async {
+                        inventoryPopupShown = true;
+
+                        Navigator.pop(context); // close popup
+                        await saveBillWithoutNavigation(); // save bill
+
+                        // ⭐ OPEN CREATE BILL SCREEN DIRECTLY
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CreateBillScreen(
+                              billKey: widget.billKey,
+                              existingBill: {
+                                "customerName": widget.customerName,
+                                "mobile": widget.mobile,
+                                "address": widget.address,
+                                "billNumber": widget.billNumber,
+                                "date": widget.billDate.toIso8601String(),
+                                "items": widget.items,
+                                "subTotal": widget.subTotal,
+                                "gst": widget.gstTotal,
+                                "cess": widget.cessTotal,
+                                "charges": widget.charges,
+                                "discount": widget.discount,
+                                "grandTotal": widget.grandTotal,
+                                "paid": isPaid,
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text("Update"),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void handleSavePress() {
+    if (!inventoryPopupShown) {
+      showInventoryPopup();
+    } else {
+      saveBill();
+    }
   }
 
   Widget row(String title, double value, {bool bold = false}) {
@@ -142,6 +235,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
     );
   }
 
+  /// ================= UI BACK 😎 =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -274,7 +368,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
             ),
           ),
 
-          /// PAYMENT + SAVE
+          /// SAVE BUTTON SAME
           Container(
             color: Colors.white,
             padding: const EdgeInsets.all(16),
@@ -303,7 +397,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
                     backgroundColor: const Color(0xFF0C2752),
                     minimumSize: const Size(double.infinity, 50),
                   ),
-                  onPressed: saveBill,
+                  onPressed: handleSavePress,
                   child: const Text("Save Bill"),
                 ),
               ],

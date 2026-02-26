@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/customer_provider.dart';
+import 'package:frontend/models/customer_model.dart';
 
 class AddCustomerScreen extends StatefulWidget {
-  final dynamic customer;
+  final Customer? customer;
   final bool isEdit;
 
   const AddCustomerScreen({super.key, this.customer, this.isEdit = false});
@@ -24,10 +25,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     super.initState();
 
     if (widget.isEdit && widget.customer != null) {
-      nameController.text = widget.customer.name;
-      mobileController.text = widget.customer.mobile;
-      addressController.text = widget.customer.address;
-      selectedType = widget.customer.type;
+      nameController.text = widget.customer!.name;
+      mobileController.text = widget.customer!.mobile;
+      addressController.text = widget.customer!.address;
+      selectedType = widget.customer!.type;
     }
   }
 
@@ -145,7 +146,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
                   if (widget.isEdit) {
                     provider.updateCustomer(
-                      widget.customer.name,
+                      widget.customer!.name,
                       nameController.text.trim(),
                       mobileController.text.trim(),
                       addressController.text.trim(),

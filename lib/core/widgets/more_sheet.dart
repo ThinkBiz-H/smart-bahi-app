@@ -6,6 +6,7 @@ import '../../features/settings/screens/settings_screen.dart';
 import '../../features/billing/screens/billing_screen.dart';
 import '../../features/stock/screens/stock_screen.dart';
 import '../../features/profile/screens/multi_device_screen.dart';
+import '../../features/reminder/screens/reminder_customers_screen.dart';
 
 class MoreSheet extends StatelessWidget {
   const MoreSheet({super.key});
@@ -78,7 +79,15 @@ class MoreSheet extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const MultiDeviceScreen()),
               );
             }),
-            _item(Icons.notifications, 'Reminder', () {}),
+            _item(Icons.notifications, 'Reminder', () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ReminderCustomersScreen(),
+                ),
+              );
+            }),
           ]),
         ],
       ),

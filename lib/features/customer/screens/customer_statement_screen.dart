@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/customer_provider.dart';
+import 'package:frontend/models/customer_model.dart';
 
 class CustomerStatementScreen extends StatelessWidget {
   final Customer customer;
