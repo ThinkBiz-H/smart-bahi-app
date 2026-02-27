@@ -1,43 +1,7 @@
 // import 'dart:convert';
 // import 'package:flutter/material.dart';
 // import 'package:url_launcher/url_launcher.dart';
-
-// class Customer {
-//   String name;
-//   String mobile;
-//   String address;
-//   String type;
-//   bool smsEnabled;
-//   String? imageBase64;
-
-//   DateTime? reminderStartDate;
-//   int? reminderDays;
-
-//   List<Map<String, dynamic>> transactions = [];
-
-//   Customer({
-//     required this.name,
-//     required this.mobile,
-//     required this.address,
-//     required this.type,
-//     this.smsEnabled = false,
-//     this.imageBase64,
-//     this.reminderStartDate,
-//     this.reminderDays,
-//   });
-
-//   double get balance {
-//     double b = 0;
-//     for (var t in transactions) {
-//       if (t['type'] == 'GIVEN') {
-//         b += t['amount'];
-//       } else {
-//         b -= t['amount'];
-//       }
-//     }
-//     return b;
-//   }
-// }
+// import 'package:frontend/models/customer_model.dart';
 
 // class CustomerProvider extends ChangeNotifier {
 //   final List<Customer> _people = [];
@@ -96,6 +60,14 @@
 //     notifyListeners();
 //   }
 
+//   void setDueDate(String name, DateTime date) {
+//     final index = _people.indexWhere((p) => p.name == name);
+//     if (index == -1) return;
+
+//     _people[index].dueDate = date;
+//     notifyListeners();
+//   }
+
 //   ImageProvider? getCustomerImage(Customer customer) {
 //     if (customer.imageBase64 == null) return null;
 //     return MemoryImage(base64Decode(customer.imageBase64!));
@@ -110,7 +82,7 @@
 
 //   // ================= TRANSACTIONS =================
 
-//   void addTransaction(String name, Map<String, dynamic> transaction) async {
+//   void addTransaction(String name, Map<String, dynamic> transaction) {
 //     final index = _people.indexWhere((p) => p.name == name);
 //     if (index == -1) return;
 
@@ -164,6 +136,14 @@
 //     notifyListeners();
 //   }
 
+//   void setAutoReminderDate(String name, DateTime date) {
+//     final index = _people.indexWhere((p) => p.name == name);
+//     if (index == -1) return;
+
+//     _people[index].reminderStartDate = date; // ⭐ REAL DATE SAVE
+//     notifyListeners();
+//   }
+
 //   Future<void> checkAutoReminders() async {
 //     for (var customer in _people) {
 //       if (customer.reminderStartDate == null || customer.reminderDays == null)
@@ -197,6 +177,40 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/models/customer_model.dart';
 
 class CustomerProvider extends ChangeNotifier {
+  // ================= BUSINESS PROFILE =================
+
+  String _businessName = "My Business";
+  String _businessPhone = "";
+  String? _businessImageBase64;
+  bool _isBusinessCreated = false;
+
+  String get businessName => _businessName;
+  String get businessPhone => _businessPhone;
+  bool get isBusinessCreated => _isBusinessCreated;
+
+  ImageProvider? get businessImage {
+    if (_businessImageBase64 == null) return null;
+    return MemoryImage(base64Decode(_businessImageBase64!));
+  }
+
+  void updateBusinessProfile({
+    required String name,
+    required String phone,
+    String? base64Image,
+  }) {
+    _businessName = name;
+    _businessPhone = phone;
+    _isBusinessCreated = true;
+
+    if (base64Image != null) {
+      _businessImageBase64 = base64Image;
+    }
+
+    notifyListeners();
+  }
+
+  // ================= CUSTOMER DATA =================
+
   final List<Customer> _people = [];
 
   List<Customer> get customers =>
@@ -333,7 +347,7 @@ class CustomerProvider extends ChangeNotifier {
     final index = _people.indexWhere((p) => p.name == name);
     if (index == -1) return;
 
-    _people[index].reminderStartDate = date; // ⭐ REAL DATE SAVE
+    _people[index].reminderStartDate = date;
     notifyListeners();
   }
 

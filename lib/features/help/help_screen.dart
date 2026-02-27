@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'faq_detail_screen.dart';
 
@@ -17,8 +15,8 @@ class HelpScreen extends StatelessWidget {
             title: "Frequently Asked Questions",
             icon: Icons.help_outline,
             questions: [
-              "What is OkCredit?",
-              "Why use OkCredit?",
+              "What is SmartBahi?",
+              "Why use SmartBahi?",
               "How to use this app?",
               "Do my customers need this app?",
               "How to share the app?",

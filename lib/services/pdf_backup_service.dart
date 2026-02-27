@@ -361,7 +361,7 @@ class PdfBackupService {
             ),
             child: pw.Center(
               child: pw.Text(
-                "OKCREDIT",
+                "SmartBahi",
                 style: pw.TextStyle(
                   color: PdfColors.green,
                   font: bold,

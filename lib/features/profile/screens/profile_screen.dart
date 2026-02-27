@@ -259,6 +259,9 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
+import 'package:frontend/providers/customer_provider.dart';
+import 'dart:convert';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -322,6 +325,28 @@ https://play.google.com/store/apps/details?id=com.smartbahi.app
     }
   }
 
+  // Future<void> pickLogo() async {
+  //   final picker = ImagePicker();
+  //   final XFile? image = await picker.pickImage(
+  //     source: ImageSource.gallery,
+  //     imageQuality: 60,
+  //   );
+
+  //   if (image == null) return;
+
+  //   settingsBox.put('logo', image.path);
+
+  //   if (kIsWeb) {
+  //     setState(() {});
+  //   } else {
+  //     setState(() => logoFile = File(image.path));
+  //   }
+
+  //   /// ⭐ IMPORTANT — Dashboard ko update karega
+  //   final provider = context.read<CustomerProvider>();
+  //   provider.updateBusinessProfile(name: businessName, phone: mobile);
+  // }
+
   Future<void> pickLogo() async {
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(
@@ -333,11 +358,26 @@ https://play.google.com/store/apps/details?id=com.smartbahi.app
 
     settingsBox.put('logo', image.path);
 
+    String? base64Image;
+
     if (kIsWeb) {
+      final bytes = await image.readAsBytes();
+      base64Image = base64Encode(bytes);
       setState(() {});
     } else {
-      setState(() => logoFile = File(image.path));
+      final file = File(image.path);
+      final bytes = await file.readAsBytes();
+      base64Image = base64Encode(bytes);
+      setState(() => logoFile = file);
     }
+
+    /// ⭐⭐⭐ DASHBOARD UPDATE (MOST IMPORTANT) ⭐⭐⭐
+    final provider = context.read<CustomerProvider>();
+    provider.updateBusinessProfile(
+      name: businessName,
+      phone: mobile,
+      base64Image: base64Image,
+    );
   }
 
   Future<void> _editField(
@@ -359,6 +399,11 @@ https://play.google.com/store/apps/details?id=com.smartbahi.app
         onSave(result);
         settingsBox.put(key, result);
       });
+
+      /// ⭐⭐ UPDATE PROVIDER LIVE ⭐⭐
+      final provider = context.read<CustomerProvider>();
+
+      provider.updateBusinessProfile(name: businessName, phone: mobile);
     }
   }
 

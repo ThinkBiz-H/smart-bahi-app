@@ -81,7 +81,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
                         color: selectedType == "CUSTOMER"
-                            ? const Color(0xFF0C2752)
+                            ? const Color(0xFF1E8E3E)
                             : Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(18),
                       ),
@@ -164,7 +164,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 },
                 child: Text(
                   widget.isEdit ? "Update" : "Confirm",
-                  style: const TextStyle(fontSize: 18),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Color.fromARGB(255, 248, 248, 248),
+                  ),
                 ),
               ),
             ),

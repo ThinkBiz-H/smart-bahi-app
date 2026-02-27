@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -257,7 +256,7 @@ class _AccountStatementScreenState extends State<AccountStatementScreen> {
         children: [
           const SizedBox(height: 10),
 
-          /// 🔥 DATE CHIP (LIKE OKCREDIT)
+          /// 🔥 DATE CHIP (LIKE SmartBahi)
           GestureDetector(
             onTap: () async {
               final result = await Navigator.push(

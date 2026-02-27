@@ -89,7 +89,7 @@ class _PlanScreenState extends State<PlanScreen> {
                   price: "₹99 for 30 days",
                   benefits: const [
                     "All Benefits of Ads Free++ Plan",
-                    "Unlimited transaction SMS from OkCredit",
+                    "Unlimited transaction SMS from SmartBahi",
                   ],
                 ),
               ],
