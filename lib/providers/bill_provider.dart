@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import '../models/bill_model.dart';
-import '../../../providers/customer_provider.dart';
+import '../features/billing/models/bill_model.dart';
+import 'customer_provider.dart';
 
 class BillProvider extends ChangeNotifier {
   final List<BillModel> _bills = [];

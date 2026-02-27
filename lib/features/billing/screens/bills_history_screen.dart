@@ -8,7 +8,7 @@ import 'package:printing/printing.dart';
 import '../services/bill_pdf_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'bill_share_preview_screen.dart';
-
+import '../../../providers/bill_template_provider.dart';
 class BillsHistoryScreen extends StatefulWidget {
   const BillsHistoryScreen({super.key});
 
@@ -132,7 +132,8 @@ class _BillsHistoryScreenState extends State<BillsHistoryScreen> {
 
                   /// DOWNLOAD PDF
                   _BillAction(Icons.download, "Download", () async {
-                    final pdfData = await BillPdfService.generateBillPdf(bill);
+                   final template = context.read<BillTemplateProvider>().selectedTemplate;
+final pdfData = await BillPdfService.generateBillPdf(bill, template);
                     await Printing.layoutPdf(
                       onLayout: (format) async => pdfData,
                     );

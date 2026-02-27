@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/customer_provider.dart';
 import '../../stock/models/stock_item.dart';
-// import 'add_item_screen.dart';
+
 import 'create_bill_screen.dart';
 
 class BillPreviewScreen extends StatefulWidget {
@@ -154,17 +154,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                       ),
-                      // onPressed: () async {
-                      //   inventoryPopupShown = true;
-                      //   Navigator.pop(context);
-                      //   await saveBillWithoutNavigation();
-                      //   Navigator.pushReplacement(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //       builder: (_) => const AddItemScreen(),
-                      //     ),
-                      //   );
-                      // },
+                     
                       onPressed: () async {
                         inventoryPopupShown = true;
 

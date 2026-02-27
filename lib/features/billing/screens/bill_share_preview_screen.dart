@@ -5,6 +5,8 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/bill_pdf_service.dart';
 import '../widgets/bill_photo_widget.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/bill_template_provider.dart';
 
 class BillSharePreviewScreen extends StatefulWidget {
   final Map bill;
@@ -20,8 +22,13 @@ class _BillSharePreviewScreenState extends State<BillSharePreviewScreen> {
 
   /// DOWNLOAD FILE
   Future<void> downloadFile() async {
+    final templateProvider = context.read<BillTemplateProvider>();
+
     if (isPdf) {
-      final pdf = await BillPdfService.generateBillPdf(widget.bill);
+      final pdf = await BillPdfService.generateBillPdf(
+        widget.bill,
+        templateProvider.selectedTemplate,
+      );
       await Printing.layoutPdf(onLayout: (_) async => pdf);
     } else {
       final image = await controller.capture(pixelRatio: 3);
@@ -33,8 +40,14 @@ class _BillSharePreviewScreenState extends State<BillSharePreviewScreen> {
 
   /// SHARE FILE (REAL SHARE FIX)
   Future<void> shareFile() async {
+    final templateProvider = context.read<BillTemplateProvider>();
+
     if (isPdf) {
-      final pdf = await BillPdfService.generateBillPdf(widget.bill);
+      final pdf = await BillPdfService.generateBillPdf(
+        widget.bill,
+        templateProvider.selectedTemplate,
+      );
+
       await Share.shareXFiles([
         XFile.fromData(
           pdf,
@@ -71,8 +84,15 @@ class _BillSharePreviewScreenState extends State<BillSharePreviewScreen> {
           Expanded(
             child: isPdf
                 ? PdfPreview(
-                    build: (format) =>
-                        BillPdfService.generateBillPdf(widget.bill),
+                    build: (format) {
+                      final template = context
+                          .read<BillTemplateProvider>()
+                          .selectedTemplate;
+                      return BillPdfService.generateBillPdf(
+                        widget.bill,
+                        template,
+                      );
+                    },
                   )
                 : Screenshot(
                     controller: controller,
