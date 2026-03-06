@@ -4,12 +4,82 @@
 // import 'package:frontend/models/customer_model.dart';
 
 // class CustomerProvider extends ChangeNotifier {
+//   // ================= PLAN SYSTEM =================
+
+//   bool isPremiumUser = false;
+//   int dailyTransactionLimit = 2;
+
+//   int getTodayTransactionCount() {
+//     int count = 0;
+
+//     for (var person in _people) {
+//       for (var t in person.transactions) {
+//         DateTime time = DateTime.parse(t["time"]);
+
+//         if (time.year == DateTime.now().year &&
+//             time.month == DateTime.now().month &&
+//             time.day == DateTime.now().day) {
+//           count++;
+//         }
+//       }
+//     }
+
+//     return count;
+//   }
+
+//   bool canAddTransaction() {
+//     if (isPremiumUser) return true;
+
+//     return getTodayTransactionCount() < dailyTransactionLimit;
+//   }
+
+//   // ================= BUSINESS PROFILE =================
+
+//   String _businessName = "My Business";
+//   String _businessPhone = "";
+//   String? _businessImageBase64;
+//   bool _isBusinessCreated = false;
+
+//   String get businessName => _businessName;
+//   String get businessPhone => _businessPhone;
+//   bool get isBusinessCreated => _isBusinessCreated;
+
+//   ImageProvider? get businessImage {
+//     if (_businessImageBase64 == null) return null;
+//     return MemoryImage(base64Decode(_businessImageBase64!));
+//   }
+
+//   void updateBusinessProfile({
+//     required String name,
+//     required String phone,
+//     String? base64Image,
+//   }) {
+//     _businessName = name;
+//     _businessPhone = phone;
+//     _isBusinessCreated = true;
+
+//     if (base64Image != null) {
+//       _businessImageBase64 = base64Image;
+//     }
+
+//     notifyListeners();
+//   }
+
+//   // ================= CUSTOMER DATA =================
+
 //   final List<Customer> _people = [];
 
 //   List<Customer> get customers =>
 //       _people.where((p) => p.type == "CUSTOMER").toList();
 
-//   List<Customer> get suppliers =>
+//   List<Customer> get suppliers => _people
+//       .where((p) => p.type == "SUPPLIER" && p.isHidden == false)
+//       .toList();
+
+//   List<Customer> get hiddenSuppliers =>
+//       _people.where((p) => p.type == "SUPPLIER" && p.isHidden == true).toList();
+
+//   List<Customer> get allSuppliers =>
 //       _people.where((p) => p.type == "SUPPLIER").toList();
 
 //   // ================= BASIC CRUD =================
@@ -20,9 +90,11 @@
 
 //   void addPerson(String name, String mobile, String address, String type) {
 //     if (_people.any((p) => p.name == name)) return;
+
 //     _people.add(
 //       Customer(name: name, mobile: mobile, address: address, type: type),
 //     );
+
 //     notifyListeners();
 //   }
 
@@ -34,9 +106,11 @@
 //   ) {
 //     final index = _people.indexWhere((p) => p.name == oldName);
 //     if (index == -1) return;
+
 //     _people[index].name = name;
 //     _people[index].mobile = mobile;
 //     _people[index].address = address;
+
 //     notifyListeners();
 //   }
 
@@ -56,7 +130,9 @@
 //   void updateCustomerImage(String name, String base64Image) {
 //     final index = _people.indexWhere((p) => p.name == name);
 //     if (index == -1) return;
+
 //     _people[index].imageBase64 = base64Image;
+
 //     notifyListeners();
 //   }
 
@@ -65,6 +141,7 @@
 //     if (index == -1) return;
 
 //     _people[index].dueDate = date;
+
 //     notifyListeners();
 //   }
 
@@ -83,6 +160,12 @@
 //   // ================= TRANSACTIONS =================
 
 //   void addTransaction(String name, Map<String, dynamic> transaction) {
+//     /// ⭐ LIMIT CHECK
+//     if (!canAddTransaction()) {
+//       debugPrint("Daily transaction limit reached");
+//       return;
+//     }
+
 //     final index = _people.indexWhere((p) => p.name == name);
 //     if (index == -1) return;
 
@@ -94,6 +177,7 @@
 //     };
 
 //     _people[index].transactions.add(txData);
+
 //     notifyListeners();
 //   }
 
@@ -125,6 +209,13 @@
 //     await launchUrl(callUri);
 //   }
 
+//   // ================= HIDE SUPPLIER =================
+
+//   void toggleHidden(Customer customer, bool value) {
+//     customer.isHidden = value;
+//     notifyListeners();
+//   }
+
 //   // ================= AUTO REMINDER =================
 
 //   void setAutoReminder(String name, int days) {
@@ -133,6 +224,7 @@
 
 //     _people[index].reminderStartDate = DateTime.now();
 //     _people[index].reminderDays = days;
+
 //     notifyListeners();
 //   }
 
@@ -140,7 +232,8 @@
 //     final index = _people.indexWhere((p) => p.name == name);
 //     if (index == -1) return;
 
-//     _people[index].reminderStartDate = date; // ⭐ REAL DATE SAVE
+//     _people[index].reminderStartDate = date;
+
 //     notifyListeners();
 //   }
 
@@ -148,6 +241,7 @@
 //     for (var customer in _people) {
 //       if (customer.reminderStartDate == null || customer.reminderDays == null)
 //         continue;
+
 //       if (customer.balance <= 0) continue;
 
 //       final diff = DateTime.now()
@@ -165,18 +259,56 @@
 //         );
 
 //         await launchUrl(smsUri);
+
 //         customer.reminderStartDate = DateTime.now();
 //       }
 //     }
 //   }
 // }
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/models/customer_model.dart';
 
 class CustomerProvider extends ChangeNotifier {
+  // ================= PLAN SYSTEM =================
+
+  bool _isPremium = false;
+  int dailyTransactionLimit = 2;
+
+  bool get isPremium => _isPremium;
+
+  void activatePremium() {
+    _isPremium = true;
+    notifyListeners();
+  }
+
+  int getTodayTransactionCount() {
+    int count = 0;
+
+    final today = DateTime.now();
+
+    for (var person in _people) {
+      for (var t in person.transactions) {
+        DateTime time = DateTime.parse(t["time"]);
+
+        if (time.year == today.year &&
+            time.month == today.month &&
+            time.day == today.day) {
+          count++;
+        }
+      }
+    }
+
+    return count;
+  }
+
+  bool canAddTransaction() {
+    if (_isPremium) return true;
+
+    return getTodayTransactionCount() < dailyTransactionLimit;
+  }
+
   // ================= BUSINESS PROFILE =================
 
   String _businessName = "My Business";
@@ -216,7 +348,14 @@ class CustomerProvider extends ChangeNotifier {
   List<Customer> get customers =>
       _people.where((p) => p.type == "CUSTOMER").toList();
 
-  List<Customer> get suppliers =>
+  List<Customer> get suppliers => _people
+      .where((p) => p.type == "SUPPLIER" && p.isHidden == false)
+      .toList();
+
+  List<Customer> get hiddenSuppliers =>
+      _people.where((p) => p.type == "SUPPLIER" && p.isHidden == true).toList();
+
+  List<Customer> get allSuppliers =>
       _people.where((p) => p.type == "SUPPLIER").toList();
 
   // ================= BASIC CRUD =================
@@ -227,9 +366,11 @@ class CustomerProvider extends ChangeNotifier {
 
   void addPerson(String name, String mobile, String address, String type) {
     if (_people.any((p) => p.name == name)) return;
+
     _people.add(
       Customer(name: name, mobile: mobile, address: address, type: type),
     );
+
     notifyListeners();
   }
 
@@ -241,9 +382,11 @@ class CustomerProvider extends ChangeNotifier {
   ) {
     final index = _people.indexWhere((p) => p.name == oldName);
     if (index == -1) return;
+
     _people[index].name = name;
     _people[index].mobile = mobile;
     _people[index].address = address;
+
     notifyListeners();
   }
 
@@ -263,7 +406,9 @@ class CustomerProvider extends ChangeNotifier {
   void updateCustomerImage(String name, String base64Image) {
     final index = _people.indexWhere((p) => p.name == name);
     if (index == -1) return;
+
     _people[index].imageBase64 = base64Image;
+
     notifyListeners();
   }
 
@@ -272,6 +417,7 @@ class CustomerProvider extends ChangeNotifier {
     if (index == -1) return;
 
     _people[index].dueDate = date;
+
     notifyListeners();
   }
 
@@ -290,6 +436,12 @@ class CustomerProvider extends ChangeNotifier {
   // ================= TRANSACTIONS =================
 
   void addTransaction(String name, Map<String, dynamic> transaction) {
+    /// ⭐ LIMIT CHECK
+    if (!canAddTransaction()) {
+      debugPrint("Daily transaction limit reached");
+      return;
+    }
+
     final index = _people.indexWhere((p) => p.name == name);
     if (index == -1) return;
 
@@ -301,6 +453,7 @@ class CustomerProvider extends ChangeNotifier {
     };
 
     _people[index].transactions.add(txData);
+
     notifyListeners();
   }
 
@@ -332,6 +485,13 @@ class CustomerProvider extends ChangeNotifier {
     await launchUrl(callUri);
   }
 
+  // ================= HIDE SUPPLIER =================
+
+  void toggleHidden(Customer customer, bool value) {
+    customer.isHidden = value;
+    notifyListeners();
+  }
+
   // ================= AUTO REMINDER =================
 
   void setAutoReminder(String name, int days) {
@@ -340,6 +500,7 @@ class CustomerProvider extends ChangeNotifier {
 
     _people[index].reminderStartDate = DateTime.now();
     _people[index].reminderDays = days;
+
     notifyListeners();
   }
 
@@ -348,6 +509,7 @@ class CustomerProvider extends ChangeNotifier {
     if (index == -1) return;
 
     _people[index].reminderStartDate = date;
+
     notifyListeners();
   }
 
@@ -355,6 +517,7 @@ class CustomerProvider extends ChangeNotifier {
     for (var customer in _people) {
       if (customer.reminderStartDate == null || customer.reminderDays == null)
         continue;
+
       if (customer.balance <= 0) continue;
 
       final diff = DateTime.now()
@@ -372,6 +535,7 @@ class CustomerProvider extends ChangeNotifier {
         );
 
         await launchUrl(smsUri);
+
         customer.reminderStartDate = DateTime.now();
       }
     }

@@ -1,5 +1,267 @@
+// import 'package:flutter/material.dart';
+// import '../../../core/services/payment_service.dart';
+// import 'package:provider/provider.dart';
+// import '../../../providers/customer_provider.dart';
+
+// class PlanScreen extends StatefulWidget {
+//   const PlanScreen({super.key});
+
+//   @override
+//   State<PlanScreen> createState() => _PlanScreenState();
+// }
+
+// class _PlanScreenState extends State<PlanScreen> {
+//   int selectedPlan = 0; // 0 = AdsFree++ ACTIVE
+//   final PaymentService paymentService = PaymentService();
+//   @override
+//   void initState() {
+//     super.initState();
+//     paymentService.init(
+//       context,
+//       onSuccess: () {
+//         Provider.of<CustomerProvider>(context, listen: false).activatePremium();
+
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           const SnackBar(content: Text("Plan activated successfully")),
+//         );
+
+//         Navigator.pop(context);
+//       },
+//     );
+//   }
+
+//   @override
+//   void dispose() {
+//     paymentService.dispose();
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text("My plans")),
+//       body: Column(
+//         children: [
+//           /// TOP INFO BANNER
+//           Container(
+//             margin: const EdgeInsets.all(16),
+//             padding: const EdgeInsets.all(14),
+//             decoration: BoxDecoration(
+//               color: Colors.teal.shade100,
+//               borderRadius: BorderRadius.circular(12),
+//             ),
+//             child: const Row(
+//               children: [
+//                 Icon(Icons.handshake, color: Colors.teal),
+//                 SizedBox(width: 10),
+//                 Expanded(
+//                   child: Text(
+//                     "Be assured. Plan prices will never increase!",
+//                     style: TextStyle(fontWeight: FontWeight.w500),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+
+//           Expanded(
+//             child: ListView(
+//               padding: const EdgeInsets.symmetric(horizontal: 16),
+//               children: [
+//                 _planCard(
+//                   index: 0,
+//                   title: "Ads Free++",
+//                   price: "₹75 for 30 days",
+//                   active: true,
+//                   expiry: "Expires on 22 Feb, 2026 (5 days remaining)",
+//                   benefits: const [
+//                     "All Benefits of Unlimited Transactions Plan",
+//                     "No Ads",
+//                   ],
+//                 ),
+
+//                 _planCard(
+//                   index: 1,
+//                   title: "Unlimited Transactions",
+//                   price: "₹30 for 30 days",
+//                   benefits: const [
+//                     "Unlimited Daily Ledger Transactions",
+//                     "Contain Ads",
+//                   ],
+//                 ),
+
+//                 _planCard(
+//                   index: 2,
+//                   title: "Premium",
+//                   price: "₹99 for 30 days",
+//                   benefits: const [
+//                     "All Benefits of Ads Free++ Plan",
+//                     "Unlimited transaction SMS from SmartBahi",
+//                   ],
+//                 ),
+//               ],
+//             ),
+//           ),
+
+//           /// BOTTOM BUTTON
+//           Padding(
+//             padding: const EdgeInsets.all(16),
+//             child: ElevatedButton(
+//               style: ElevatedButton.styleFrom(
+//                 backgroundColor: const Color(0xFF0C2752),
+//                 minimumSize: const Size(double.infinity, 55),
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(30),
+//                 ),
+//               ),
+//               onPressed: () {
+//                 int price = 75;
+
+//                 if (selectedPlan == 1) price = 30;
+//                 if (selectedPlan == 2) price = 99;
+
+//                 paymentService.openCheckout(price);
+//               },
+
+//               child: const Text(
+//                 "Extend Plan (+30 days)",
+//                 style: TextStyle(fontSize: 16, color: Colors.white),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // PLAN CARD WIDGET
+//   Widget _planCard({
+//     required int index,
+//     required String title,
+//     required String price,
+//     bool active = false,
+//     String? expiry,
+//     required List<String> benefits,
+//   }) {
+//     final isSelected = selectedPlan == index;
+
+//     return GestureDetector(
+//       onTap: () => setState(() => selectedPlan = index),
+//       child: Container(
+//         margin: const EdgeInsets.only(bottom: 16),
+//         padding: const EdgeInsets.all(16),
+//         decoration: BoxDecoration(
+//           borderRadius: BorderRadius.circular(18),
+//           border: Border.all(
+//             color: isSelected ? const Color(0xFF0C2752) : Colors.grey.shade300,
+//             width: 2,
+//           ),
+//           color: Colors.grey.shade100,
+//         ),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             /// HEADER ROW
+//             Row(
+//               children: [
+//                 const Icon(Icons.nightlight_round, color: Colors.black87),
+//                 const SizedBox(width: 10),
+//                 Text(
+//                   title,
+//                   style: const TextStyle(
+//                     fontSize: 18,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
+//                 const Spacer(),
+
+//                 /// ACTIVE BADGE
+//                 if (active)
+//                   Container(
+//                     padding: const EdgeInsets.symmetric(
+//                       horizontal: 10,
+//                       vertical: 4,
+//                     ),
+//                     decoration: BoxDecoration(
+//                       color: Colors.green,
+//                       borderRadius: BorderRadius.circular(20),
+//                     ),
+//                     child: const Text(
+//                       "Active Plan",
+//                       style: TextStyle(color: Colors.white, fontSize: 12),
+//                     ),
+//                   ),
+
+//                 const SizedBox(width: 8),
+
+//                 /// RADIO CIRCLE
+//                 Icon(
+//                   isSelected
+//                       ? Icons.radio_button_checked
+//                       : Icons.radio_button_off,
+//                   color: Colors.green,
+//                 ),
+//               ],
+//             ),
+
+//             const SizedBox(height: 8),
+
+//             Text(
+//               price,
+//               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+//             ),
+
+//             if (expiry != null) ...[
+//               const SizedBox(height: 6),
+//               Text(expiry, style: const TextStyle(color: Colors.orange)),
+//             ],
+
+//             const Divider(height: 24),
+
+//             /// BENEFITS
+//             ...benefits.map(
+//               (b) => Padding(
+//                 padding: const EdgeInsets.only(bottom: 8),
+//                 child: Row(
+//                   children: [
+//                     const Icon(
+//                       Icons.check_circle,
+//                       color: Colors.green,
+//                       size: 18,
+//                     ),
+//                     const SizedBox(width: 8),
+//                     Text(b),
+//                   ],
+//                 ),
+//               ),
+//             ),
+
+//             const SizedBox(height: 6),
+
+//             const Row(
+//               children: [
+//                 Icon(Icons.expand_more, color: Colors.green),
+//                 SizedBox(width: 6),
+//                 Text(
+//                   "View More",
+//                   style: TextStyle(
+//                     color: Colors.green,
+//                     fontWeight: FontWeight.w600,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
 import 'package:flutter/material.dart';
 import '../../../core/services/payment_service.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/customer_provider.dart';
 
 class PlanScreen extends StatefulWidget {
   const PlanScreen({super.key});
@@ -9,18 +271,32 @@ class PlanScreen extends StatefulWidget {
 }
 
 class _PlanScreenState extends State<PlanScreen> {
-  int selectedPlan = 0; // 0 = AdsFree++ ACTIVE
+  int selectedPlan = 0;
+
   final PaymentService paymentService = PaymentService();
+
   @override
   void initState() {
     super.initState();
-    paymentService.init(
-      context,
-      onSuccess: () {
-        // plan activate after payment
-        setState(() {});
-      },
-    );
+
+    /// SAFE INIT
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      paymentService.init(
+        context,
+        onSuccess: () {
+          Provider.of<CustomerProvider>(
+            context,
+            listen: false,
+          ).activatePremium();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Plan activated successfully")),
+          );
+
+          Navigator.pop(context);
+        },
+      );
+    });
   }
 
   @override
@@ -29,13 +305,19 @@ class _PlanScreenState extends State<PlanScreen> {
     super.dispose();
   }
 
+  int getPrice() {
+    if (selectedPlan == 1) return 30;
+    if (selectedPlan == 2) return 99;
+    return 75;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("My plans")),
+      appBar: AppBar(title: const Text("My Plans")),
       body: Column(
         children: [
-          /// TOP INFO BANNER
+          /// INFO BANNER
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(14),
@@ -66,13 +348,9 @@ class _PlanScreenState extends State<PlanScreen> {
                   title: "Ads Free++",
                   price: "₹75 for 30 days",
                   active: true,
-                  expiry: "Expires on 22 Feb, 2026 (5 days remaining)",
-                  benefits: const [
-                    "All Benefits of Unlimited Transactions Plan",
-                    "No Ads",
-                  ],
+                  expiry: "Expires on 22 Feb, 2026",
+                  benefits: const ["Unlimited Transactions", "No Ads"],
                 ),
-
                 _planCard(
                   index: 1,
                   title: "Unlimited Transactions",
@@ -82,21 +360,20 @@ class _PlanScreenState extends State<PlanScreen> {
                     "Contain Ads",
                   ],
                 ),
-
                 _planCard(
                   index: 2,
                   title: "Premium",
                   price: "₹99 for 30 days",
                   benefits: const [
-                    "All Benefits of Ads Free++ Plan",
-                    "Unlimited transaction SMS from SmartBahi",
+                    "All Benefits of Ads Free++",
+                    "Unlimited transaction SMS",
                   ],
                 ),
               ],
             ),
           ),
 
-          /// BOTTOM BUTTON
+          /// PAYMENT BUTTON
           Padding(
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
@@ -108,14 +385,9 @@ class _PlanScreenState extends State<PlanScreen> {
                 ),
               ),
               onPressed: () {
-                int price = 75;
-
-                if (selectedPlan == 1) price = 30;
-                if (selectedPlan == 2) price = 99;
-
+                int price = getPrice();
                 paymentService.openCheckout(price);
               },
-
               child: const Text(
                 "Extend Plan (+30 days)",
                 style: TextStyle(fontSize: 16, color: Colors.white),
@@ -127,7 +399,6 @@ class _PlanScreenState extends State<PlanScreen> {
     );
   }
 
-  // PLAN CARD WIDGET
   Widget _planCard({
     required int index,
     required String title,
@@ -139,7 +410,11 @@ class _PlanScreenState extends State<PlanScreen> {
     final isSelected = selectedPlan == index;
 
     return GestureDetector(
-      onTap: () => setState(() => selectedPlan = index),
+      onTap: () {
+        setState(() {
+          selectedPlan = index;
+        });
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
@@ -154,10 +429,9 @@ class _PlanScreenState extends State<PlanScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// HEADER ROW
             Row(
               children: [
-                const Icon(Icons.nightlight_round, color: Colors.black87),
+                const Icon(Icons.workspace_premium),
                 const SizedBox(width: 10),
                 Text(
                   title,
@@ -167,8 +441,6 @@ class _PlanScreenState extends State<PlanScreen> {
                   ),
                 ),
                 const Spacer(),
-
-                /// ACTIVE BADGE
                 if (active)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -180,14 +452,11 @@ class _PlanScreenState extends State<PlanScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
-                      "Active Plan",
+                      "Active",
                       style: TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
-
                 const SizedBox(width: 8),
-
-                /// RADIO CIRCLE
                 Icon(
                   isSelected
                       ? Icons.radio_button_checked
@@ -199,22 +468,18 @@ class _PlanScreenState extends State<PlanScreen> {
 
             const SizedBox(height: 8),
 
-            Text(
-              price,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            Text(price, style: const TextStyle(fontWeight: FontWeight.bold)),
 
             if (expiry != null) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(expiry, style: const TextStyle(color: Colors.orange)),
             ],
 
-            const Divider(height: 24),
+            const Divider(),
 
-            /// BENEFITS
             ...benefits.map(
               (b) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
                     const Icon(
@@ -222,27 +487,11 @@ class _PlanScreenState extends State<PlanScreen> {
                       color: Colors.green,
                       size: 18,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Text(b),
                   ],
                 ),
               ),
-            ),
-
-            const SizedBox(height: 6),
-
-            const Row(
-              children: [
-                Icon(Icons.expand_more, color: Colors.green),
-                SizedBox(width: 6),
-                Text(
-                  "View More",
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
             ),
           ],
         ),

@@ -1,6 +1,8 @@
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/customer_provider.dart';
 import '../../billing/screens/select_template_screen.dart';
+import '../../plan/screens/plan_screen.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final bool isGiven;
@@ -44,6 +46,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
+
     if (picked != null) {
       setState(() => selectedDate = picked);
     }
@@ -113,7 +116,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
           _keypad(),
 
-          /// ⭐⭐⭐ FINAL BUTTON ROW ⭐⭐⭐
+          /// ⭐ FINAL BUTTON ROW
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -146,10 +149,24 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     onPressed: () {
                       if (amount == '0') return;
 
+                      final provider = Provider.of<CustomerProvider>(
+                        context,
+                        listen: false,
+                      );
+
+                      /// ⭐ CHECK DAILY LIMIT
+                      if (!provider.canAddTransaction()) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const PlanScreen()),
+                        );
+                        return;
+                      }
+
                       Navigator.pop(context, {
                         'amount': double.parse(amount),
                         'note': noteController.text,
-                        'date': DateTime.now(),
+                        'date': selectedDate,
                         'type': widget.isGiven ? 'GIVEN' : 'RECEIVED',
                       });
                     },
@@ -165,6 +182,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   /// ---------- KEYPAD ----------
+
   Widget _keypad() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
