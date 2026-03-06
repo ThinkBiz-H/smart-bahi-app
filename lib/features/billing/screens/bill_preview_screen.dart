@@ -154,7 +154,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                       ),
-                     
+
                       onPressed: () async {
                         inventoryPopupShown = true;
 
