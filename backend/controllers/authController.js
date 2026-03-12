@@ -65,11 +65,177 @@
 //     success: true,
 //   });
 // };
+
+// const User = require("../models/User");
+// const Device = require("../models/Device");
+
+// // ================= SEND OTP =================
+
+// exports.sendOtp = async (req, res) => {
+//   try {
+//     const { mobile } = req.body;
+
+//     if (!mobile) {
+//       return res.json({
+//         success: false,
+//         message: "Mobile number required",
+//       });
+//     }
+
+//     let user = await User.findOne({ mobile });
+
+//     if (!user) {
+//       user = new User({ mobile });
+//     }
+
+//     const otp = Math.floor(100000 + Math.random() * 900000);
+
+//     user.otp = otp;
+//     user.otpExpiry = Date.now() + 5 * 60 * 1000;
+
+//     await user.save();
+
+//     console.log("OTP:", otp);
+
+//     res.json({
+//       success: true,
+//       message: "OTP sent",
+//       mobile,
+//     });
+//   } catch (error) {
+//     console.log("SEND OTP ERROR:", error);
+
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+// // ================= VERIFY OTP =================
+
+// exports.verifyOtp = async (req, res) => {
+//   try {
+//     const { mobile, otp, deviceName, deviceId } = req.body;
+
+//     if (!mobile || !otp) {
+//       return res.json({
+//         success: false,
+//         message: "Mobile and OTP required",
+//       });
+//     }
+
+//     const user = await User.findOne({ mobile });
+
+//     if (!user) {
+//       return res.json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     /// OTP CHECK
+
+//     if (user.otp !== Number(otp)) {
+//       return res.json({
+//         success: false,
+//         message: "Invalid OTP",
+//       });
+//     }
+
+//     /// OTP EXPIRY
+
+//     if (user.otpExpiry < Date.now()) {
+//       return res.json({
+//         success: false,
+//         message: "OTP expired",
+//       });
+//     }
+
+//     /// ================= SAVE DEVICE =================
+
+//     if (deviceId) {
+//       await Device.findOneAndUpdate(
+//         { deviceId },
+//         {
+//           mobile,
+//           deviceName: deviceName || "Unknown Device",
+//           lastActive: new Date(),
+//         },
+//         {
+//           upsert: true,
+//           new: true,
+//         },
+//       );
+//     }
+
+//     /// CLEAR OTP AFTER LOGIN
+
+//     user.otp = null;
+//     user.otpExpiry = null;
+
+//     await user.save();
+
+//     res.json({
+//       success: true,
+//       message: "Login successful",
+//       user,
+//     });
+//   } catch (error) {
+//     console.log("OTP VERIFY ERROR:", error);
+
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
 const User = require("../models/User");
 const Device = require("../models/Device");
-
+const { sendSMS } = require("../services/smsService");
 // ================= SEND OTP =================
 
+// exports.sendOtp = async (req, res) => {
+//   try {
+//     const { mobile } = req.body;
+
+//     if (!mobile) {
+//       return res.json({
+//         success: false,
+//         message: "Mobile number required",
+//       });
+//     }
+
+//     let user = await User.findOne({ mobile });
+
+//     if (!user) {
+//       user = new User({ mobile });
+//     }
+
+//     const otp = Math.floor(100000 + Math.random() * 900000);
+
+//     user.otp = otp;
+//     user.otpExpiry = Date.now() + 5 * 60 * 1000;
+
+//     await user.save();
+
+//     console.log("OTP:", otp);
+
+//     res.json({
+//       success: true,
+//       message: "OTP sent",
+//       mobile,
+//     });
+//   } catch (error) {
+//     console.log("SEND OTP ERROR:", error);
+
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 exports.sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
@@ -95,6 +261,9 @@ exports.sendOtp = async (req, res) => {
     await user.save();
 
     console.log("OTP:", otp);
+
+    /// SEND OTP SMS
+    await sendSMS(mobile, `Your Smart Bahi OTP is ${otp}`);
 
     res.json({
       success: true,
@@ -155,9 +324,10 @@ exports.verifyOtp = async (req, res) => {
 
     if (deviceId) {
       await Device.findOneAndUpdate(
-        { deviceId },
+        { mobile, deviceId },
         {
           mobile,
+          deviceId,
           deviceName: deviceName || "Unknown Device",
           lastActive: new Date(),
         },

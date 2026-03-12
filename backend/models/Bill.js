@@ -1,41 +1,72 @@
+// // const mongoose = require("mongoose");
+
+// // const billSchema = new mongoose.Schema(
+// //   {
+// //     mobile: String,
+
+// //     customerName: String,
+// //     address: String,
+
+// //     billNumber: String,
+
+// //     date: Date,
+
+// //     items: [
+// //       {
+// //         name: String,
+// //         qty: Number,
+// //         rate: Number,
+// //         baseAmount: Number,
+// //       },
+// //     ],
+
+// //     subTotal: Number,
+// //     gst: Number,
+// //     cess: Number,
+// //     charges: Number,
+// //     discount: Number,
+// //     grandTotal: Number,
+
+// //     paid: Boolean,
+// //   },
+// //   { timestamps: true },
+// // );
+
+// // module.exports = mongoose.model("Bill", billSchema);
+
+
+
 // const mongoose = require("mongoose");
 
-// const billSchema = new mongoose.Schema(
-//   {
-//     mobile: String,
+// const billSchema = new mongoose.Schema({
+//   ownerMobile: String,
 
-//     customerName: String,
-//     address: String,
+//   customerName: String,
+//   mobile: String,
+//   address: String,
 
-//     billNumber: String,
+//   billNumber: String,
+//   date: Date,
 
-//     date: Date,
+//   items: Array,
 
-//     items: [
-//       {
-//         name: String,
-//         qty: Number,
-//         rate: Number,
-//         baseAmount: Number,
-//       },
-//     ],
+//   subTotal: Number,
+//   gstTotal: Number,
+//   cessTotal: Number,
 
-//     subTotal: Number,
-//     gst: Number,
-//     cess: Number,
-//     charges: Number,
-//     discount: Number,
-//     grandTotal: Number,
+//   charges: Number,
+//   discount: Number,
 
-//     paid: Boolean,
-//   },
-//   { timestamps: true },
-// );
+//   grandTotal: Number,
+
+//   paid: Boolean,
+// });
 
 // module.exports = mongoose.model("Bill", billSchema);
 const mongoose = require("mongoose");
 
 const billSchema = new mongoose.Schema({
+
   ownerMobile: String,
 
   customerName: String,
@@ -45,7 +76,15 @@ const billSchema = new mongoose.Schema({
   billNumber: String,
   date: Date,
 
-  items: Array,
+  items: [
+    {
+      productCode: String,
+      name: String,
+      qty: Number,
+      rate: Number,
+      total: Number
+    }
+  ],
 
   subTotal: Number,
   gstTotal: Number,
@@ -56,7 +95,11 @@ const billSchema = new mongoose.Schema({
 
   grandTotal: Number,
 
-  paid: Boolean,
-});
+  paid: {
+    type: Boolean,
+    default: false
+  }
+
+}, { timestamps: true });
 
 module.exports = mongoose.model("Bill", billSchema);

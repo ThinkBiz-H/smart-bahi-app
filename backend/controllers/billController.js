@@ -62,13 +62,130 @@
 
 //   res.json({ message: "Bill deleted" });
 // };
+
+// const Bill = require("../models/Bill");
+
+// /// ADD BILL
+// exports.addBill = async (req, res) => {
+//   try {
+//     const bill = new Bill(req.body);
+//     await bill.save();
+
+//     res.json({
+//       success: true,
+//       data: bill,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+// /// GET BILLS
+// exports.getBills = async (req, res) => {
+//   try {
+//     const mobile = req.params.mobile;
+
+//     const bills = await Bill.find({
+//       ownerMobile: mobile,
+//     }).sort({ date: -1 });
+
+//     res.json({
+//       success: true,
+//       data: bills,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+// /// UPDATE BILL
+// exports.updateBill = async (req, res) => {
+//   try {
+//     const id = req.params.id;
+
+//     const bill = await Bill.findByIdAndUpdate(id, req.body, {
+//       returnDocument: "after",
+//     });
+
+//     res.json({
+//       success: true,
+//       data: bill,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+// /// DELETE BILL
+// exports.deleteBill = async (req, res) => {
+//   try {
+//     const id = req.params.id;
+
+//     await Bill.findByIdAndDelete(id);
+
+//     res.json({
+//       success: true,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+// exports.addBill = async (req, res) => {
+//   try {
+//     console.log("Incoming Bill:", req.body); // ⭐ ADD THIS
+
+//     const bill = new Bill(req.body);
+//     await bill.save();
+
+//     res.json({
+//       success: true,
+//       data: bill,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 const Bill = require("../models/Bill");
+const Product = require("../models/Product");
 
 /// ADD BILL
 exports.addBill = async (req, res) => {
   try {
     const bill = new Bill(req.body);
     await bill.save();
+
+    // ===============================
+    // STOCK REDUCE
+    // ===============================
+
+    if (req.body.items && req.body.items.length > 0) {
+      for (const item of req.body.items) {
+        await Product.findOneAndUpdate(
+          {
+            productCode: item.productCode,
+            mobile: req.body.ownerMobile,
+          },
+          {
+            $inc: { qty: -item.qty },
+          },
+        );
+      }
+    }
 
     res.json({
       success: true,
@@ -108,9 +225,7 @@ exports.updateBill = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const bill = await Bill.findByIdAndUpdate(id, req.body, {
-      returnDocument: "after",
-    });
+    const bill = await Bill.findByIdAndUpdate(id, req.body, { new: true });
 
     res.json({
       success: true,
@@ -133,24 +248,6 @@ exports.deleteBill = async (req, res) => {
 
     res.json({
       success: true,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-exports.addBill = async (req, res) => {
-  try {
-    console.log("Incoming Bill:", req.body); // ⭐ ADD THIS
-
-    const bill = new Bill(req.body);
-    await bill.save();
-
-    res.json({
-      success: true,
-      data: bill,
     });
   } catch (error) {
     res.status(500).json({
