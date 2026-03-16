@@ -733,14 +733,31 @@
 //     notifyListeners();
 //   }
 // }
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/models/customer_model.dart';
 import '../services/api_service.dart';
 import 'package:hive/hive.dart';
+import 'package:telephony/telephony.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CustomerProvider extends ChangeNotifier {
+  final Telephony telephony = Telephony.instance;
+  Future<bool> requestSmsPermission() async {
+    final status = await Permission.sms.request();
+    return status.isGranted;
+  }
+
+  Future<void> sendSMS(String mobile, String message) async {
+    bool granted = await requestSmsPermission();
+
+    if (!granted) return;
+
+    await telephony.sendSms(to: mobile, message: message);
+  }
+
   bool _isPremium = false;
   int dailyTransactionLimit = 2;
 
@@ -1045,13 +1062,15 @@ class CustomerProvider extends ChangeNotifier {
             "₹${transaction["amount"]} ${transaction["type"] == "GIVEN" ? "udhaar diya" : "paisa mila"}.\n"
             "SmartBahi";
 
-        final Uri smsUri = Uri(
-          scheme: 'sms',
-          path: customer.mobile,
-          queryParameters: {'body': message},
-        );
+        // final Uri smsUri = Uri(
+        //   scheme: 'sms',
+        //   path: customer.mobile,
+        //   queryParameters: {'body': message},
+        // );
+        await sendSMS(customer.mobile, message);
 
-        await launchUrl(smsUri);
+        // await launchUrl(smsUri);
+        // await sendSMS(customer.mobile, message);
       }
     }
   }
@@ -1115,7 +1134,8 @@ class CustomerProvider extends ChangeNotifier {
           queryParameters: {'body': message},
         );
 
-        await launchUrl(smsUri);
+        // await launchUrl(smsUri);
+        await sendSMS(customer.mobile, message);
       }
     }
   }
