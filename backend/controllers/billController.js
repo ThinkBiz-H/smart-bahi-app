@@ -1,75 +1,29 @@
 // const Bill = require("../models/Bill");
 // const Product = require("../models/Product");
 
-// // exports.createBill = async (req, res) => {
-// //   const bill = new Bill(req.body);
-
-// //   await bill.save();
-
-// //   for (const item of req.body.items) {
-// //     const product = await Product.findOne({ name: item.name });
-
-// //     if (product) {
-// //       product.qty = Number(product.qty) - Number(item.qty);
-// //       await product.save();
-// //     }
-// //   }
-
-// //   res.json(bill);
-// // };
-
-// exports.createBill = async (req, res) => {
-//   try {
-//     const bill = new Bill(req.body);
-//     await bill.save();
-
-//     // ensure items is array
-//     const items = Array.isArray(req.body.items) ? req.body.items : [];
-
-//     for (const item of items) {
-//       const product = await Product.findOne({ name: item.name });
-
-//       if (product) {
-//         const currentQty = Number(product.qty) || 0;
-//         const sellQty = Number(item.qty) || 0;
-
-//         product.qty = currentQty - sellQty;
-
-//         if (product.qty < 0) product.qty = 0;
-
-//         await product.save();
-//       }
-//     }
-
-//     res.json(bill);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-// exports.getBills = async (req, res) => {
-//   const { mobile } = req.params;
-
-//   const bills = await Bill.find({ mobile });
-
-//   res.json(bills);
-// };
-
-// exports.deleteBill = async (req, res) => {
-//   const { id } = req.params;
-
-//   await Bill.findByIdAndDelete(id);
-
-//   res.json({ message: "Bill deleted" });
-// };
-
-// const Bill = require("../models/Bill");
-
 // /// ADD BILL
 // exports.addBill = async (req, res) => {
 //   try {
 //     const bill = new Bill(req.body);
 //     await bill.save();
+
+//     // ===============================
+//     // STOCK REDUCE
+//     // ===============================
+
+//     if (req.body.items && req.body.items.length > 0) {
+//       for (const item of req.body.items) {
+//         await Product.findOneAndUpdate(
+//           {
+//             productCode: item.productCode,
+//             mobile: req.body.ownerMobile,
+//           },
+//           {
+//             $inc: { qty: -item.qty },
+//           },
+//         );
+//       }
+//     }
 
 //     res.json({
 //       success: true,
@@ -109,9 +63,7 @@
 //   try {
 //     const id = req.params.id;
 
-//     const bill = await Bill.findByIdAndUpdate(id, req.body, {
-//       returnDocument: "after",
-//     });
+//     const bill = await Bill.findByIdAndUpdate(id, req.body, { new: true });
 
 //     res.json({
 //       success: true,
@@ -142,56 +94,67 @@
 //     });
 //   }
 // };
-// exports.addBill = async (req, res) => {
-//   try {
-//     console.log("Incoming Bill:", req.body); // ⭐ ADD THIS
-
-//     const bill = new Bill(req.body);
-//     await bill.save();
-
-//     res.json({
-//       success: true,
-//       data: bill,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
 const Bill = require("../models/Bill");
 const Product = require("../models/Product");
 
-/// ADD BILL
+/// ================= ADD BILL =================
 exports.addBill = async (req, res) => {
   try {
+    const { items, ownerMobile } = req.body;
+
     const bill = new Bill(req.body);
     await bill.save();
 
     // ===============================
-    // STOCK REDUCE
+    // 🔥 STOCK REDUCE (FULL FIX)
     // ===============================
 
-    if (req.body.items && req.body.items.length > 0) {
-      for (const item of req.body.items) {
-        await Product.findOneAndUpdate(
-          {
-            productCode: item.productCode,
-            mobile: req.body.ownerMobile,
-          },
-          {
-            $inc: { qty: -item.qty },
-          },
-        );
+    if (items && items.length > 0) {
+      for (const item of items) {
+        console.log("🧾 ITEM:", item);
+
+        const product = await Product.findOne({
+          name: item.name, // ✅ productCode hata diya (issue wahi tha)
+          mobile: ownerMobile,
+        });
+
+        if (!product) {
+          console.log("❌ Product NOT FOUND:", item.name);
+          continue;
+        }
+
+        const sellQty = Number(item.qty || item.quantity || 0);
+
+        if (!sellQty || sellQty <= 0) {
+          console.log("⚠️ Invalid qty:", item);
+          continue;
+        }
+
+        // ❌ STOCK CHECK
+        if (product.qty < sellQty) {
+          return res.status(400).json({
+            success: false,
+            message: `Not enough stock for ${product.name}`,
+          });
+        }
+
+        // ✅ UPDATE STOCK
+        product.qty = product.qty - sellQty;
+
+        await product.save();
+
+        console.log(`✅ STOCK UPDATED: ${product.name} → ${product.qty}`);
       }
     }
 
     res.json({
       success: true,
+      message: "Bill created & stock updated",
       data: bill,
     });
   } catch (error) {
+    console.log("❌ BILL ERROR:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
@@ -199,14 +162,14 @@ exports.addBill = async (req, res) => {
   }
 };
 
-/// GET BILLS
+/// ================= GET BILLS =================
 exports.getBills = async (req, res) => {
   try {
     const mobile = req.params.mobile;
 
     const bills = await Bill.find({
       ownerMobile: mobile,
-    }).sort({ date: -1 });
+    }).sort({ createdAt: -1 });
 
     res.json({
       success: true,
@@ -220,12 +183,14 @@ exports.getBills = async (req, res) => {
   }
 };
 
-/// UPDATE BILL
+/// ================= UPDATE BILL =================
 exports.updateBill = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const bill = await Bill.findByIdAndUpdate(id, req.body, { new: true });
+    const bill = await Bill.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
 
     res.json({
       success: true,
@@ -239,7 +204,7 @@ exports.updateBill = async (req, res) => {
   }
 };
 
-/// DELETE BILL
+/// ================= DELETE BILL =================
 exports.deleteBill = async (req, res) => {
   try {
     const id = req.params.id;
