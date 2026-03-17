@@ -182,80 +182,138 @@ res.status(500).json({
 
 // ================= VERIFY OTP =================
 
+// exports.verifyOtp = async (req, res) => {
+//   try {
+//     const { mobile, otp, deviceName, deviceId } = req.body;
+
+//     ```
+// if (!mobile || !otp) {
+//   return res.json({
+//     success: false,
+//     message: "Mobile and OTP required",
+//   });
+// }
+
+// const user = await User.findOne({ mobile });
+
+// if (!user) {
+//   return res.json({
+//     success: false,
+//     message: "User not found",
+//   });
+// }
+
+// if (user.otp !== Number(otp)) {
+//   return res.json({
+//     success: false,
+//     message: "Invalid OTP",
+//   });
+// }
+
+// if (user.otpExpiry < Date.now()) {
+//   return res.json({
+//     success: false,
+//     message: "OTP expired",
+//   });
+// }
+
+// /// SAVE DEVICE
+
+// if (deviceId) {
+//   await Device.findOneAndUpdate(
+//     { mobile, deviceId },
+//     {
+//       mobile,
+//       deviceId,
+//       deviceName: deviceName || "Unknown Device",
+//       lastActive: new Date(),
+//     },
+//     {
+//       upsert: true,
+//       new: true,
+//     }
+//   );
+// }
+
+// /// CLEAR OTP
+
+// user.otp = null;
+// user.otpExpiry = null;
+
+// await user.save();
+
+// res.json({
+//   success: true,
+//   message: "Login successful",
+//   user,
+// });
+// ```;
+//   } catch (error) {
+//     console.log("OTP VERIFY ERROR:", error);
+
+//     ```
+// res.status(500).json({
+//   success: false,
+//   message: error.message,
+// });
+// ```;
+//   }
+// };
+
 exports.verifyOtp = async (req, res) => {
   try {
     const { mobile, otp, deviceName, deviceId } = req.body;
 
-    ```
-if (!mobile || !otp) {
-  return res.json({
-    success: false,
-    message: "Mobile and OTP required",
-  });
-}
-
-const user = await User.findOne({ mobile });
-
-if (!user) {
-  return res.json({
-    success: false,
-    message: "User not found",
-  });
-}
-
-if (user.otp !== Number(otp)) {
-  return res.json({
-    success: false,
-    message: "Invalid OTP",
-  });
-}
-
-if (user.otpExpiry < Date.now()) {
-  return res.json({
-    success: false,
-    message: "OTP expired",
-  });
-}
-
-/// SAVE DEVICE
-
-if (deviceId) {
-  await Device.findOneAndUpdate(
-    { mobile, deviceId },
-    {
-      mobile,
-      deviceId,
-      deviceName: deviceName || "Unknown Device",
-      lastActive: new Date(),
-    },
-    {
-      upsert: true,
-      new: true,
+    if (!mobile || !otp) {
+      return res.json({ success: false, message: "Mobile and OTP required" });
     }
-  );
-}
 
-/// CLEAR OTP
+    const user = await User.findOne({ mobile });
 
-user.otp = null;
-user.otpExpiry = null;
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
 
-await user.save();
+    if (user.otp !== Number(otp)) {
+      return res.json({ success: false, message: "Invalid OTP" });
+    }
 
-res.json({
-  success: true,
-  message: "Login successful",
-  user,
-});
-```;
+    if (user.otpExpiry < Date.now()) {
+      return res.json({ success: false, message: "OTP expired" });
+    }
+
+    /// 🔥 MAKE ALL DEVICES NOT CURRENT
+    await Device.updateMany({ mobile }, { isCurrent: false });
+
+    /// 🔥 SAVE CURRENT DEVICE
+    await Device.findOneAndUpdate(
+      { mobile, deviceId },
+      {
+        mobile,
+        deviceId,
+        deviceName: deviceName || "Unknown Device",
+        isCurrent: true,
+        lastActive: new Date(),
+      },
+      { upsert: true, new: true },
+    );
+
+    user.otp = null;
+    user.otpExpiry = null;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Login successful",
+      user,
+    });
   } catch (error) {
     console.log("OTP VERIFY ERROR:", error);
 
-    ```
-res.status(500).json({
-  success: false,
-  message: error.message,
-});
-```;
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

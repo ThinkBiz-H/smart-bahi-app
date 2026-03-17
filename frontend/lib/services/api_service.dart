@@ -434,12 +434,31 @@ class ApiService {
     return jsonDecode(res.body);
   }
 
-  static Future logoutDevice(String deviceId) async {
+  // static Future logoutDevice(String deviceId) async {
+  //   final res = await http.post(
+  //     Uri.parse("$baseUrl/devices/logout"),
+  //     headers: headers,
+  //     body: jsonEncode({"deviceId": deviceId}),
+  //   );
+  //   return jsonDecode(res.body);
+  // }
+  static Future logoutDevice(String mobile, String deviceId) async {
     final res = await http.post(
       Uri.parse("$baseUrl/devices/logout"),
       headers: headers,
-      body: jsonEncode({"deviceId": deviceId}),
+      body: jsonEncode({"mobile": mobile, "deviceId": deviceId}),
     );
+
+    return jsonDecode(res.body);
+  }
+
+  static Future logoutAllDevices(String mobile) async {
+    final res = await http.post(
+      Uri.parse("$baseUrl/devices/logout-all"),
+      headers: headers,
+      body: jsonEncode({"mobile": mobile}),
+    );
+
     return jsonDecode(res.body);
   }
 }
