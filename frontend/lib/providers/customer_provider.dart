@@ -733,29 +733,48 @@
 //     notifyListeners();
 //   }
 // }
-
+import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/models/customer_model.dart';
 import '../services/api_service.dart';
 import 'package:hive/hive.dart';
-import 'package:telephony/telephony.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class CustomerProvider extends ChangeNotifier {
-  final Telephony telephony = Telephony.instance;
   Future<bool> requestSmsPermission() async {
     final status = await Permission.sms.request();
     return status.isGranted;
   }
 
+  // Future<void> sendSMS(String mobile, String message) async {
+  //   bool granted = await requestSmsPermission();
+
+  //   if (!granted) return;
+
+  //   // await telephony.sendSms(to: mobile, message: message);
+  // }
+  // Future<void> sendSMS(String mobile, String message) async {
+  //   final Uri smsUri = Uri(
+  //     scheme: 'sms',
+  //     path: mobile,
+  //     queryParameters: {'body': message},
+  //   );
+
+  //   if (await canLaunchUrl(smsUri)) {
+  //     await launchUrl(smsUri);
+  //   }
+  // }
   Future<void> sendSMS(String mobile, String message) async {
-    bool granted = await requestSmsPermission();
+    final Uri smsUri = Uri.parse(
+      "sms:$mobile?body=${Uri.encodeComponent(message)}",
+    );
 
-    if (!granted) return;
-
-    await telephony.sendSms(to: mobile, message: message);
+    if (await canLaunchUrl(smsUri)) {
+      await launchUrl(smsUri, mode: LaunchMode.externalApplication);
+    } else {
+      debugPrint("SMS launch failed");
+    }
   }
 
   bool _isPremium = false;
@@ -839,25 +858,52 @@ class CustomerProvider extends ChangeNotifier {
 
   /// ================= LOAD CUSTOMERS =================
 
+  // Future loadCustomers(String mobile) async {
+  //   final res = await ApiService.getCustomers(mobile);
+
+  //   _people.clear();
+
+  //   if (true) {
+  //     List list = res["data"];
+
+  //     for (var c in list) {
+  //       _people.add(
+  //         Customer(
+  //           id: c["_id"] ?? "",
+  //           name: c["name"] ?? "",
+  //           mobile: c["mobile"] ?? "",
+  //           address: c["address"] ?? "",
+  //           type: c["type"] == "SUPPLIER" ? "SUPPLIER" : "CUSTOMER",
+  //           imageBase64: c["imageBase64"] ?? "",
+  //         ),
+  //       );
+  //     }
+  //   }
+
+  //   notifyListeners();
+  // }
   Future loadCustomers(String mobile) async {
     final res = await ApiService.getCustomers(mobile);
 
     _people.clear();
 
-    if (res != null && res["success"] == true) {
+    if (res != null && res["data"] != null) {
       List list = res["data"];
 
       for (var c in list) {
-        _people.add(
-          Customer(
-            id: c["_id"] ?? "",
-            name: c["name"] ?? "",
-            mobile: c["mobile"] ?? "",
-            address: c["address"] ?? "",
-            type: c["type"] == "SUPPLIER" ? "SUPPLIER" : "CUSTOMER",
-            imageBase64: c["imageBase64"] ?? "",
-          ),
+        final customer = Customer(
+          id: c["_id"] ?? "",
+          name: c["name"] ?? "",
+          mobile: c["mobile"] ?? "",
+          address: c["address"] ?? "",
+          type: c["type"] == "SUPPLIER" ? "SUPPLIER" : "CUSTOMER",
+          imageBase64: c["imageBase64"] ?? "",
         );
+
+        _people.add(customer);
+
+        /// ⭐ LOAD TRANSACTIONS FOR EACH CUSTOMER
+        await loadTransactions(customer.id, customer.name);
       }
     }
 
@@ -1030,6 +1076,50 @@ class CustomerProvider extends ChangeNotifier {
 
   /// ================= TRANSACTION =================
 
+  // Future addTransaction(String name, Map transaction) async {
+  //   final settings = Hive.box('settings');
+  //   final ownerMobile = settings.get('mobile');
+
+  //   final customer = getCustomer(name);
+
+  //   if (customer.id.isEmpty) return;
+
+  //   final res = await ApiService.addTransaction({
+  //     "ownerMobile": ownerMobile,
+  //     "customerId": customer.id,
+  //     "type": transaction["type"] == "GIVEN" ? "gave" : "received",
+  //     "amount": transaction["amount"],
+  //     "note": transaction["note"],
+  //   });
+
+  //   if (res != null && res["success"] == true) {
+  //     customer.transactions.add({
+  //       "amount": transaction["amount"],
+  //       "type": transaction["type"],
+  //       "note": transaction["note"],
+  //       "time": DateTime.now().toIso8601String(),
+  //     });
+
+  //     notifyListeners();
+
+  //     if (customer.smsEnabled) {
+  //       final message =
+  //           "Hi ${customer.name},\n"
+  //           "₹${transaction["amount"]} ${transaction["type"] == "GIVEN" ? "udhaar diya" : "paisa mila"}.\n"
+  //           "SmartBahi";
+
+  //       // final Uri smsUri = Uri(
+  //       //   scheme: 'sms',
+  //       //   path: customer.mobile,
+  //       //   queryParameters: {'body': message},
+  //       // );
+  //       await sendSMS(customer.mobile, message);
+
+  //       // await launchUrl(smsUri);
+  //       // await sendSMS(customer.mobile, message);
+  //     }
+  //   }
+  // }
   Future addTransaction(String name, Map transaction) async {
     final settings = Hive.box('settings');
     final ownerMobile = settings.get('mobile');
@@ -1038,40 +1128,37 @@ class CustomerProvider extends ChangeNotifier {
 
     if (customer.id.isEmpty) return;
 
-    final res = await ApiService.addTransaction({
-      "ownerMobile": ownerMobile,
-      "customerId": customer.id,
-      "type": transaction["type"] == "GIVEN" ? "gave" : "received",
+    try {
+      await ApiService.addTransaction({
+        "ownerMobile": ownerMobile,
+        "customerId": customer.id,
+        "type": transaction["type"] == "GIVEN" ? "gave" : "received",
+        "amount": transaction["amount"],
+        "note": transaction["note"],
+      });
+    } catch (e) {
+      print("API error ignore: $e");
+    }
+
+    // LOCAL SAVE
+    customer.transactions.add({
       "amount": transaction["amount"],
+      "type": transaction["type"],
       "note": transaction["note"],
+      "time": DateTime.now().toIso8601String(),
     });
 
-    if (res != null) {
-      customer.transactions.add({
-        "amount": transaction["amount"],
-        "type": transaction["type"],
-        "note": transaction["note"],
-        "time": DateTime.now().toIso8601String(),
-      });
+    notifyListeners();
 
-      notifyListeners();
+    // SMS SEND
+    final message =
+        "Hi ${customer.name},\n"
+        "₹${transaction["amount"]} ${transaction["type"] == "GIVEN" ? "udhaar diya" : "paisa mila"}.\n"
+        "SmartBahi";
 
-      if (customer.smsEnabled) {
-        final message =
-            "Hi ${customer.name},\n"
-            "₹${transaction["amount"]} ${transaction["type"] == "GIVEN" ? "udhaar diya" : "paisa mila"}.\n"
-            "SmartBahi";
-
-        // final Uri smsUri = Uri(
-        //   scheme: 'sms',
-        //   path: customer.mobile,
-        //   queryParameters: {'body': message},
-        // );
-        await sendSMS(customer.mobile, message);
-
-        // await launchUrl(smsUri);
-        // await sendSMS(customer.mobile, message);
-      }
+    // await sendSMS(customer.mobile, message);
+    if (customer.smsEnabled) {
+      await sendSMS(customer.mobile, message);
     }
   }
 

@@ -813,7 +813,14 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     final image = provider.getCustomerImage(customer);
 
     final DateTime? dueDate = customer.dueDate;
-    final transactions = provider.getTransactions(widget.customerName);
+    // final transactions = provider.getTransactions(widget.customerName);
+    final transactions = List.from(
+      provider.getTransactions(widget.customerName),
+    );
+
+    transactions.sort(
+      (a, b) => DateTime.parse(a["time"]).compareTo(DateTime.parse(b["time"])),
+    );
     final balance = calculateBalance(transactions);
 
     return Scaffold(

@@ -113,12 +113,24 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   DateTime? lastPausedTime;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CustomerProvider>(
+        context,
+        listen: false,
+      ).checkAutoReminders();
+    });
   }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addObserver(this);
+
+  // }
 
   @override
   void dispose() {
