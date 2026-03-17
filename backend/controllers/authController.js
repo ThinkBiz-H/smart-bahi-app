@@ -371,3 +371,27 @@ exports.verifyOtp = async (req, res) => {
     });
   }
 };
+exports.logoutAllDevices = async (req, res) => {
+  try {
+    const { mobile } = req.body;
+
+    if (!mobile) {
+      return res.json({
+        success: false,
+        message: "Mobile required",
+      });
+    }
+
+    await Device.deleteMany({ mobile });
+
+    res.json({
+      success: true,
+      message: "All devices logged out",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
