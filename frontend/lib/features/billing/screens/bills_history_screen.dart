@@ -300,108 +300,7 @@
 //     );
 //   }
 // }
-//tyaa se yrr code tha apna
-// import 'package:flutter/material.dart';
-// import 'package:hive/hive.dart';
-// import '../../../services/api_service.dart';
-// import 'bill_preview_screen.dart';
-
-// class BillsHistoryScreen extends StatefulWidget {
-//   const BillsHistoryScreen({super.key});
-
-//   @override
-//   State<BillsHistoryScreen> createState() => _BillsHistoryScreenState();
-// }
-
-// class _BillsHistoryScreenState extends State<BillsHistoryScreen> {
-//   List bills = [];
-//   bool loading = true;
-
-//   Future loadBills() async {
-//     final settings = Hive.box('settings');
-//     final mobile = settings.get('mobile');
-
-//     final res = await ApiService.getBills(mobile);
-
-//     if (res["success"] == true) {
-//       setState(() {
-//         bills = res["data"];
-//         loading = false;
-//       });
-//     }
-//   }
-
-//   Future deleteBill(String id) async {
-//     await ApiService.deleteBill(id);
-//     loadBills();
-//   }
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     loadBills();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text("Saved Bills")),
-//       body: loading
-//           ? const Center(child: CircularProgressIndicator())
-//           : bills.isEmpty
-//           ? const Center(child: Text("No Bills Found"))
-//           : ListView.builder(
-//               itemCount: bills.length,
-//               itemBuilder: (context, index) {
-//                 final bill = bills[index];
-
-//                 return Card(
-//                   margin: const EdgeInsets.all(10),
-//                   child: ListTile(
-//                     title: Text("Bill ${bill['billNumber']}"),
-//                     subtitle: Text(bill['customerName']),
-//                     trailing: Row(
-//                       mainAxisSize: MainAxisSize.min,
-//                       children: [
-//                         Text("₹${bill['grandTotal']}"),
-//                         IconButton(
-//                           icon: const Icon(Icons.delete),
-//                           onPressed: () => deleteBill(bill["_id"]),
-//                         ),
-//                       ],
-//                     ),
-//                     onTap: () {
-//                       Navigator.push(
-//                         context,
-//                         MaterialPageRoute(
-//                           builder: (_) => BillPreviewScreen(
-//                             billKey: bill["_id"],
-//                             customerName: bill['customerName'],
-//                             mobile: bill['mobile'] ?? "",
-//                             address: bill['address'] ?? "",
-//                             billNumber: bill['billNumber'],
-//                             billDate: DateTime.parse(bill['date']),
-//                             items: List<Map<String, dynamic>>.from(
-//                               bill['items'],
-//                             ),
-//                             subTotal: (bill['subTotal'] as num).toDouble(),
-//                             gstTotal: (bill['gstTotal'] as num).toDouble(),
-//                             cessTotal: (bill['cessTotal'] as num).toDouble(),
-//                             charges: (bill['charges'] as num).toDouble(),
-//                             discount: (bill['discount'] as num).toDouble(),
-//                             grandTotal: (bill['grandTotal'] as num).toDouble(),
-//                           ),
-//                         ),
-//                       );
-//                     },
-//                   ),
-//                 );
-//               },
-//             ),
-//     );
-//   }
-// }
-
+//
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../../../services/api_service.dart';
@@ -477,7 +376,6 @@ class _BillsHistoryScreenState extends State<BillsHistoryScreen> {
                         MaterialPageRoute(
                           builder: (_) => BillPreviewScreen(
                             billKey: bill["_id"],
-                            paid: bill['paid'] ?? false,
                             customerName: bill['customerName'],
                             mobile: bill['mobile'] ?? "",
                             address: bill['address'] ?? "",
