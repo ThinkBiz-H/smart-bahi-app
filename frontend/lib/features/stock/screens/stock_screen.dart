@@ -2,6 +2,7 @@
 // import 'package:hive_flutter/hive_flutter.dart';
 // import '../models/stock_item.dart';
 // import 'edit_item_screen.dart';
+// import '../../../services/api_service.dart';
 
 // class StockScreen extends StatefulWidget {
 //   const StockScreen({super.key});
@@ -13,6 +14,46 @@
 // class _StockScreenState extends State<StockScreen> {
 //   String search = "";
 
+//   Future<void> loadProducts() async {
+//     try {
+//       final settingsBox = Hive.box('settings');
+//       final mobile = settingsBox.get('mobile');
+
+//       final data = await ApiService.getProducts(mobile);
+
+//       final box = Hive.box<StockItem>('stock');
+
+//       await box.clear();
+
+//       for (var p in data) {
+//         await box.add(
+//           StockItem(
+//             name: p["name"] ?? "",
+//             mrp: p["mrp"]?.toString() ?? "0",
+//             qty: p["qty"]?.toString() ?? "0",
+//             unit: p["unit"] ?? "",
+//             rate: p["rate"]?.toString() ?? "0",
+//             date: p["date"] ?? "",
+//             tax: p["tax"] ?? "0%",
+//             taxType: p["taxType"] ?? "Included",
+//             productCode: p["productCode"] ?? "",
+//             imagePath: p["imagePath"] ?? "",
+//           ),
+//         );
+//       }
+
+//       setState(() {});
+//     } catch (e) {
+//       debugPrint("Stock load error: $e");
+//     }
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     loadProducts();
+//   }
+
 //   @override
 //   Widget build(BuildContext context) {
 //     final box = Hive.box<StockItem>('stock');
@@ -20,7 +61,7 @@
 //     return Scaffold(
 //       appBar: AppBar(title: const Text("Stock Items"), centerTitle: true),
 
-//       /// ➕ ADD ITEM BUTTON
+//       /// ➕ ADD ITEM
 //       floatingActionButton: FloatingActionButton(
 //         backgroundColor: const Color(0xFF0C2752),
 //         child: const Icon(Icons.add),
@@ -29,13 +70,15 @@
 //             context,
 //             MaterialPageRoute(builder: (_) => const EditItemScreen()),
 //           );
-//           setState(() {});
+
+//           /// reload after add
+//           loadProducts();
 //         },
 //       ),
 
 //       body: Column(
 //         children: [
-//           /// 🔎 SEARCH BAR
+//           /// SEARCH
 //           Padding(
 //             padding: const EdgeInsets.all(12),
 //             child: TextField(
@@ -49,11 +92,15 @@
 //                   borderSide: BorderSide.none,
 //                 ),
 //               ),
-//               onChanged: (val) => setState(() => search = val),
+//               onChanged: (val) {
+//                 setState(() {
+//                   search = val;
+//                 });
+//               },
 //             ),
 //           ),
 
-//           /// 📦 LIVE LIST FROM HIVE
+//           /// LIST
 //           Expanded(
 //             child: ValueListenableBuilder<Box<StockItem>>(
 //               valueListenable: box.listenable(),
@@ -108,9 +155,51 @@
 //                           ],
 //                         ),
 
-//                         trailing: const Icon(Icons.edit, size: 18),
+//                         // trailing: const Icon(Icons.edit, size: 18),
+//                         trailing: Row(
+//                           mainAxisSize: MainAxisSize.min,
+//                           children: [
+//                             /// EDIT BUTTON
+//                             IconButton(
+//                               icon: const Icon(Icons.edit, size: 18),
+//                               onPressed: () async {
+//                                 await Navigator.push(
+//                                   context,
+//                                   MaterialPageRoute(
+//                                     builder: (_) => EditItemScreen(item: item),
+//                                   ),
+//                                 );
 
-//                         /// ✏️ EDIT ITEM
+//                                 loadProducts();
+//                               },
+//                             ),
+
+//                             /// DELETE BUTTON
+//                             IconButton(
+//                               icon: const Icon(Icons.delete, color: Colors.red),
+//                               onPressed: () async {
+//                                 if (item.productCode.isEmpty) {
+//                                   debugPrint("Product code missing");
+//                                   return;
+//                                 }
+
+//                                 try {
+//                                   await ApiService.deleteProduct(
+//                                     item.productCode,
+//                                   );
+
+//                                   await item.delete();
+
+//                                   setState(() {});
+//                                 } catch (e) {
+//                                   debugPrint("Delete error: $e");
+//                                 }
+//                               },
+//                             ),
+//                           ],
+//                         ),
+
+//                         /// EDIT
 //                         onTap: () async {
 //                           await Navigator.push(
 //                             context,
@@ -118,13 +207,21 @@
 //                               builder: (_) => EditItemScreen(item: item),
 //                             ),
 //                           );
-//                           setState(() {});
+
+//                           loadProducts();
 //                         },
 
-//                         /// 🗑️ DELETE ITEM (LONG PRESS)
+//                         /// DELETE
 //                         onLongPress: () async {
-//                           await item.delete();
-//                           setState(() {});
+//                           try {
+//                             await ApiService.deleteProduct(item.productCode);
+
+//                             await item.delete();
+
+//                             setState(() {});
+//                           } catch (e) {
+//                             debugPrint("Delete error: $e");
+//                           }
 //                         },
 //                       ),
 //                     );
@@ -138,6 +235,7 @@
 //     );
 //   }
 // }
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/stock_item.dart';
@@ -163,26 +261,44 @@ class _StockScreenState extends State<StockScreen> {
 
       final box = Hive.box<StockItem>('stock');
 
-      await box.clear();
+      /// ❌ REMOVE clear (important fix)
+      // await box.clear();
 
       for (var p in data) {
-        await box.add(
-          StockItem(
-            name: p["name"] ?? "",
-            mrp: p["mrp"]?.toString() ?? "0",
-            qty: p["qty"]?.toString() ?? "0",
-            unit: p["unit"] ?? "",
-            rate: p["rate"]?.toString() ?? "0",
-            date: p["date"] ?? "",
-            tax: p["tax"] ?? "0%",
-            taxType: p["taxType"] ?? "Included",
-            productCode: p["productCode"] ?? "",
-            imagePath: p["imagePath"] ?? "",
-          ),
-        );
-      }
+        final existing = box.values
+            .where((e) => e.productCode == p["productCode"])
+            .toList();
 
-      setState(() {});
+        if (existing.isNotEmpty) {
+          final item = existing.first;
+
+          item
+            ..name = p["name"] ?? ""
+            ..mrp = p["mrp"]?.toString() ?? "0"
+            ..qty = p["qty"]?.toString() ?? "0"
+            ..unit = p["unit"] ?? ""
+            ..rate = p["rate"]?.toString() ?? "0"
+            ..date = p["date"] ?? ""
+            ..tax = p["tax"] ?? "0%"
+            ..taxType = p["taxType"] ?? "Included"
+            ..save();
+        } else {
+          await box.add(
+            StockItem(
+              name: p["name"] ?? "",
+              mrp: p["mrp"]?.toString() ?? "0",
+              qty: p["qty"]?.toString() ?? "0",
+              unit: p["unit"] ?? "",
+              rate: p["rate"]?.toString() ?? "0",
+              date: p["date"] ?? "",
+              tax: p["tax"] ?? "0%",
+              taxType: p["taxType"] ?? "Included",
+              productCode: p["productCode"] ?? "",
+              imagePath: p["imagePath"] ?? "",
+            ),
+          );
+        }
+      }
     } catch (e) {
       debugPrint("Stock load error: $e");
     }
@@ -191,7 +307,7 @@ class _StockScreenState extends State<StockScreen> {
   @override
   void initState() {
     super.initState();
-    loadProducts();
+    loadProducts(); // first load ok
   }
 
   @override
@@ -206,13 +322,15 @@ class _StockScreenState extends State<StockScreen> {
         backgroundColor: const Color(0xFF0C2752),
         child: const Icon(Icons.add),
         onPressed: () async {
-          await Navigator.push(
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const EditItemScreen()),
           );
 
-          /// reload after add
-          loadProducts();
+          /// ❌ API reload hata diya
+          if (result == true) {
+            setState(() {}); // optional (listener already handle karega)
+          }
         },
       ),
 
@@ -295,42 +413,38 @@ class _StockScreenState extends State<StockScreen> {
                           ],
                         ),
 
-                        // trailing: const Icon(Icons.edit, size: 18),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            /// EDIT BUTTON
+                            /// EDIT
                             IconButton(
                               icon: const Icon(Icons.edit, size: 18),
                               onPressed: () async {
-                                await Navigator.push(
+                                final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => EditItemScreen(item: item),
                                   ),
                                 );
 
-                                loadProducts();
+                                if (result == true) {
+                                  setState(() {});
+                                }
                               },
                             ),
 
-                            /// DELETE BUTTON
+                            /// DELETE
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () async {
-                                if (item.productCode.isEmpty) {
-                                  debugPrint("Product code missing");
-                                  return;
-                                }
-
                                 try {
-                                  await ApiService.deleteProduct(
-                                    item.productCode,
-                                  );
+                                  if (item.productCode.isNotEmpty) {
+                                    await ApiService.deleteProduct(
+                                      item.productCode,
+                                    );
+                                  }
 
                                   await item.delete();
-
-                                  setState(() {});
                                 } catch (e) {
                                   debugPrint("Delete error: $e");
                                 }
@@ -339,28 +453,16 @@ class _StockScreenState extends State<StockScreen> {
                           ],
                         ),
 
-                        /// EDIT
                         onTap: () async {
-                          await Navigator.push(
+                          final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => EditItemScreen(item: item),
                             ),
                           );
 
-                          loadProducts();
-                        },
-
-                        /// DELETE
-                        onLongPress: () async {
-                          try {
-                            await ApiService.deleteProduct(item.productCode);
-
-                            await item.delete();
-
+                          if (result == true) {
                             setState(() {});
-                          } catch (e) {
-                            debugPrint("Delete error: $e");
                           }
                         },
                       ),
