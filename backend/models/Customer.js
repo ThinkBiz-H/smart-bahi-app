@@ -1,11 +1,16 @@
 // const mongoose = require("mongoose");
 
 // const customerSchema = new mongoose.Schema({
-//   ownerMobile: String, // login user
+//   ownerMobile: String,
 
 //   name: String,
 //   mobile: String,
 //   address: String,
+//   type: String, // ⭐ CUSTOMER / SUPPLIER
+//   imageBase64: {
+//     type: String,
+//     default: "",
+//   },
 // });
 
 // module.exports = mongoose.model("Customer", customerSchema);
@@ -18,10 +23,17 @@ const customerSchema = new mongoose.Schema({
   name: String,
   mobile: String,
   address: String,
-  type: String, // ⭐ CUSTOMER / SUPPLIER
+  type: String, // CUSTOMER / SUPPLIER
+
   imageBase64: {
     type: String,
     default: "",
+  },
+
+  /// 🔥 ADD THIS
+  balance: {
+    type: Number,
+    default: 0,
   },
 });
 

@@ -440,6 +440,10 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                             MaterialPageRoute(
                               builder: (_) => BillPreviewScreen(
                                 billKey: widget.billKey,
+                                paid:
+                                    widget.existingBill?["paid"] ??
+                                    false, // 🔥 YE LINE ADD KAR
+
                                 customerName: customerName,
                                 mobile: mobile,
                                 address: address,

@@ -18,6 +18,18 @@
 // }
 
 // class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
+//   @override
+//   void initState() {
+//     super.initState();
+
+//     Future.microtask(() {
+//       final provider = context.read<CustomerProvider>();
+//       final customer = provider.getCustomer(widget.customerName);
+
+//       provider.loadTransactions(customer.id, widget.customerName);
+//     });
+//   }
+
 //   double calculateBalance(List transactions) {
 //     double b = 0;
 //     for (var t in transactions) {
@@ -211,7 +223,14 @@
 //     final image = provider.getCustomerImage(customer);
 
 //     final DateTime? dueDate = customer.dueDate;
-//     final transactions = provider.getTransactions(widget.customerName);
+//     // final transactions = provider.getTransactions(widget.customerName);
+//     final transactions = List.from(
+//       provider.getTransactions(widget.customerName),
+//     );
+
+//     transactions.sort(
+//       (a, b) => DateTime.parse(a["time"]).compareTo(DateTime.parse(b["time"])),
+//     );
 //     final balance = calculateBalance(transactions);
 
 //     return Scaffold(
@@ -821,7 +840,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     transactions.sort(
       (a, b) => DateTime.parse(a["time"]).compareTo(DateTime.parse(b["time"])),
     );
-    final balance = calculateBalance(transactions);
+    // final balance = calculateBalance(transactions);
+    final balance = customer.balance ?? 0;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
@@ -1101,9 +1121,17 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text("Balance Due"),
+                    // Text(
+                    //   "₹${balance.abs()}",
+                    //   style: const TextStyle(color: Colors.red, fontSize: 16),
+                    // ),
                     Text(
                       "₹${balance.abs()}",
-                      style: const TextStyle(color: Colors.red, fontSize: 16),
+                      style: TextStyle(
+                        color: balance >= 0 ? Colors.red : Colors.green,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
