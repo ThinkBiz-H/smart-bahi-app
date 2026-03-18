@@ -842,12 +842,14 @@ class BillPreviewScreen extends StatefulWidget {
 
 class _BillPreviewScreenState extends State<BillPreviewScreen> {
   bool isPaid = false;
+  bool savedPaid = false;
   bool hasShownPopup = false;
   @override
   void initState() {
     super.initState();
     if (widget.existingBill != null) {
       isPaid = widget.existingBill?['paid'] ?? false;
+      savedPaid = isPaid;
     }
   }
 
@@ -916,6 +918,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
     } catch (e) {
       debugPrint("Error: $e");
     }
+    savedPaid = isPaid;
   }
 
   /// ================= POPUP =================
@@ -957,15 +960,15 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
                         backgroundColor: Colors.green,
                       ),
                       onPressed: () async {
-                        Navigator.pop(context);
+                        Navigator.pop(context); // popup close
 
-                        await saveBillWithoutNavigation();
                         hasShownPopup = false;
-                        Navigator.pushAndRemoveUntil(
-                          parentContext,
-                          MaterialPageRoute(builder: (_) => BillingScreen()),
-                          (route) => false,
-                        );
+
+                        // 🔥 instant back
+                        Navigator.pop(parentContext, true);
+
+                        // 🔥 background save
+                        saveBillWithoutNavigation();
                       },
                       child: const Text("Update"),
                     ),
@@ -979,20 +982,20 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
     );
   }
 
+  // 🔥 ONLY CHANGE: handleSavePress + popup button optimized
+
   void handleSavePress() async {
     if (!hasShownPopup) {
       hasShownPopup = true;
-      showInventoryPopup(); // first time popup
+      showInventoryPopup();
     } else {
-      await saveBillWithoutNavigation(); // second time direct save
       hasShownPopup = false;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => BillingScreen(), // ✅ CHANGE HERE
-        ),
-        (route) => false,
-      );
+
+      // 🔥 instant navigation
+      Navigator.pop(context, true);
+
+      // 🔥 background save
+      saveBillWithoutNavigation();
     }
   }
 
@@ -1083,46 +1086,61 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
 
                     const Divider(),
                     row("TOTAL", widget.grandTotal, bold: true),
+                    if (savedPaid)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Center(
+                          child: Text(
+                            "PAID",
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
             ),
           ),
 
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    const Text("Payment status"),
-                    const Spacer(),
-                    Radio(
-                      value: true,
-                      groupValue: isPaid,
-                      onChanged: (_) => setState(() => isPaid = true),
-                    ),
-                    const Text("Paid"),
-                    Radio(
-                      value: false,
-                      groupValue: isPaid,
-                      onChanged: (_) => setState(() => isPaid = false),
-                    ),
-                    const Text("Unpaid"),
-                  ],
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0C2752),
-                    minimumSize: const Size(double.infinity, 50),
+          if (!savedPaid)
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Text("Payment status"),
+                      const Spacer(),
+                      Radio(
+                        value: true,
+                        groupValue: isPaid,
+                        onChanged: (_) => setState(() => isPaid = true),
+                      ),
+                      const Text("Paid"),
+                      Radio(
+                        value: false,
+                        groupValue: isPaid,
+                        onChanged: (_) => setState(() => isPaid = false),
+                      ),
+                      const Text("Unpaid"),
+                    ],
                   ),
-                  onPressed: handleSavePress,
-                  child: const Text("Save Bill"),
-                ),
-              ],
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0C2752),
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    onPressed: handleSavePress,
+                    child: const Text("Save Bill"),
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
