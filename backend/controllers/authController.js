@@ -255,7 +255,8 @@ exports.verifyOtp = async (req, res) => {
         isCurrent: true,
         lastActive: new Date(),
       },
-      { upsert: true, new: true },
+      // { upsert: true, new: true },
+      { upsert: true, returnDocument: "after" },
     );
 
     console.log("DEVICE SAVED ✅");
