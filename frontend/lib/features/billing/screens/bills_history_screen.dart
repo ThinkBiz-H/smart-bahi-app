@@ -403,6 +403,8 @@
 //   }
 // }
 
+
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../../../services/api_service.dart';
@@ -451,63 +453,69 @@ class _BillsHistoryScreenState extends State<BillsHistoryScreen> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : bills.isEmpty
-          ? const Center(child: Text("No Bills Found"))
-          : ListView.builder(
-              itemCount: bills.length,
-              itemBuilder: (context, index) {
-                final bill = bills[index];
+              ? const Center(child: Text("No Bills Found"))
+              : ListView.builder(
+                  itemCount: bills.length,
+                  itemBuilder: (context, index) {
+                    final bill = bills[index];
 
-                return Card(
-                  margin: const EdgeInsets.all(10),
-                  child: ListTile(
-                    title: Text("Bill ${bill['billNumber']}"),
-                    subtitle: Text(bill['customerName']),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text("₹${bill['grandTotal']}"),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => deleteBill(bill["_id"]),
-                        ),
-                      ],
-                    ),
-
-                    // 🔥 FINAL FIX HERE
-                    onTap: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BillPreviewScreen(
-                            billKey: bill["_id"],
-                            existingBill: bill,
-                            customerName: bill['customerName'],
-                            mobile: bill['mobile'] ?? "",
-                            address: bill['address'] ?? "",
-                            billNumber: bill['billNumber'],
-                            billDate: DateTime.parse(bill['date']),
-                            items: List<Map<String, dynamic>>.from(
-                              bill['items'],
+                    return Card(
+                      margin: const EdgeInsets.all(10),
+                      child: ListTile(
+                        title: Text("Bill ${bill['billNumber']}"),
+                        subtitle: Text(bill['customerName']),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("₹${bill['grandTotal']}"),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => deleteBill(bill["_id"]),
                             ),
-                            subTotal: (bill['subTotal'] as num).toDouble(),
-                            gstTotal: (bill['gstTotal'] as num).toDouble(),
-                            cessTotal: (bill['cessTotal'] as num).toDouble(),
-                            charges: (bill['charges'] as num).toDouble(),
-                            discount: (bill['discount'] as num).toDouble(),
-                            grandTotal: (bill['grandTotal'] as num).toDouble(),
-                          ),
+                          ],
                         ),
-                      );
 
-                      // 🔥 REFRESH AFTER BACK
-                      if (result == true) {
-                        loadBills(); // 🔥 IMPORTANT
-                      }
-                    },
-                  ),
-                );
-              },
-            ),
+                        // 🔥 FINAL FIX HERE
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BillPreviewScreen(
+                                billKey: bill["_id"],
+                                existingBill: bill,
+                                customerName: bill['customerName'],
+                                mobile: bill['mobile'] ?? "",
+                                address: bill['address'] ?? "",
+                                billNumber: bill['billNumber'],
+                                billDate: DateTime.parse(bill['date']),
+                                items: List<Map<String, dynamic>>.from(
+                                  bill['items'],
+                                ),
+                                subTotal:
+                                    (bill['subTotal'] as num).toDouble(),
+                                gstTotal:
+                                    (bill['gstTotal'] as num).toDouble(),
+                                cessTotal:
+                                    (bill['cessTotal'] as num).toDouble(),
+                                charges:
+                                    (bill['charges'] as num).toDouble(),
+                                discount:
+                                    (bill['discount'] as num).toDouble(),
+                                grandTotal:
+                                    (bill['grandTotal'] as num).toDouble(),
+                              ),
+                            ),
+                          );
+
+                          // 🔥 REFRESH AFTER BACK
+                          if (result == true) {
+                            loadBills(); // 🔥 IMPORTANT
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

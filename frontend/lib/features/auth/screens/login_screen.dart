@@ -1,5 +1,3 @@
-
-
 // import 'package:flutter/material.dart';
 // import '../../../core/widgets/app_bottom_nav.dart';
 // import 'otp_screen.dart';
@@ -347,6 +345,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool loading = false;
 
+  // Future<void> sendOtp() async {
+  //   if (_formKey.currentState?.validate() ?? false) {
+  //     setState(() {
+  //       loading = true;
+  //     });
+
+  //     try {
+  //       final res = await ApiService.sendOtp(phoneController.text);
+
+  //       if (res["success"] == true || res["message"] != null) {
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(
+  //             builder: (_) => OTPScreen(phone: phoneController.text),
+  //           ),
+  //         );
+  //       } else {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(content: Text(res["message"] ?? "OTP failed")),
+  //         );
+  //       }
+  //     } catch (e) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Server error")),
+  //       );
+  //     }
+
+  //     setState(() {
+  //       loading = false;
+  //     });
+  //   }
+  // }
+
   Future<void> sendOtp() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
@@ -354,9 +385,13 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
+        print("🔥 BUTTON CLICKED");
+
         final res = await ApiService.sendOtp(phoneController.text);
 
-        if (res["success"] == true || res["message"] != null) {
+        print("🔥 API RESPONSE: $res");
+
+        if (res["success"] == true) {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -369,9 +404,11 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Server error")),
-        );
+        print("❌ ERROR: $e");
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Server error")));
       }
 
       setState(() {
@@ -433,8 +470,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   Text(
                     "Please enter your mobile number to continue",
-                    style:
-                        TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                   ),
 
                   const SizedBox(height: 40),
@@ -460,15 +496,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               height: 16,
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(
-                                width: 24,
-                                height: 16,
-                                color: Colors.blue,
-                                child: const Icon(
-                                  Icons.flag,
-                                  size: 12,
-                                  color: Colors.white,
-                                ),
-                              ),
+                                    width: 24,
+                                    height: 16,
+                                    color: Colors.blue,
+                                    child: const Icon(
+                                      Icons.flag,
+                                      size: 12,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                             ),
                             const SizedBox(width: 8),
                             const Text(
@@ -487,17 +523,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                       ),
-                      prefixIconConstraints:
-                          const BoxConstraints(minWidth: 0),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide:
-                            BorderSide(color: Colors.grey.shade300),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide:
-                            BorderSide(color: Colors.grey.shade300),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -508,13 +541,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide:
-                            BorderSide(color: Colors.red.shade400),
+                        borderSide: BorderSide(color: Colors.red.shade400),
                       ),
                       filled: true,
                       fillColor: Colors.grey.shade50,
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 16),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     style: const TextStyle(fontSize: 16),
                     validator: (value) {
@@ -543,9 +574,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       child: loading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
+                          ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
                               "Send OTP",
                               style: TextStyle(
@@ -566,4 +595,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

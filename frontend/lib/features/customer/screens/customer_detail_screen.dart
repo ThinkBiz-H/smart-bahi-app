@@ -651,6 +651,24 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return b;
   }
 
+  // void openTransaction(bool isGiven) async {
+  //   final result = await Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (_) => AddTransactionScreen(
+  //         isGiven: isGiven,
+  //         customerName: widget.customerName,
+  //       ),
+  //     ),
+  //   );
+
+  //   if (result != null) {
+  //     Provider.of<CustomerProvider>(
+  //       context,
+  //       listen: false,
+  //     ).addTransaction(widget.customerName, result);
+  //   }
+  // }
   void openTransaction(bool isGiven) async {
     final result = await Navigator.push(
       context,
@@ -662,11 +680,14 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       ),
     );
 
-    if (result != null) {
-      Provider.of<CustomerProvider>(
-        context,
-        listen: false,
-      ).addTransaction(widget.customerName, result);
+    if (result == true) {
+      final provider = context.read<CustomerProvider>();
+      final customer = provider.getCustomer(widget.customerName);
+
+      /// 🔥 RELOAD FROM BACKEND
+      await provider.loadTransactions(customer.id, widget.customerName);
+
+      setState(() {}); // 🔥 UI refresh
     }
   }
 

@@ -220,6 +220,7 @@
 //     );
 //   }
 //}
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/customer_provider.dart';
@@ -274,13 +275,46 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
   }
 
+  // Future<void> confirmTransaction() async {
+  //   if (amount == '0') return;
+
+  //   final provider = Provider.of<CustomerProvider>(context, listen: false);
+
+  //   try {
+  //     /// DAILY LIMIT CHECK
+  //     if (!provider.canAddTransaction()) {
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(builder: (_) => const PlanScreen()),
+  //       );
+  //       return;
+  //     }
+
+  //     /// SAVE TRANSACTION
+  //     await provider.addTransaction(widget.customerName, {
+  //       'amount': double.parse(amount),
+  //       'note': noteController.text,
+  //       'type': widget.isGiven ? 'GIVEN' : 'RECEIVED',
+  //     });
+
+  //     /// CLOSE SCREEN
+  //     if (mounted) {
+  //       Navigator.pop(context);
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Transaction Error: $e");
+
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text("Error saving transaction")));
+  //   }
+  // }
   Future<void> confirmTransaction() async {
     if (amount == '0') return;
 
-    final provider = Provider.of<CustomerProvider>(context, listen: false);
+    final provider = context.read<CustomerProvider>();
 
     try {
-      /// DAILY LIMIT CHECK
       if (!provider.canAddTransaction()) {
         Navigator.push(
           context,
@@ -289,23 +323,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         return;
       }
 
-      /// SAVE TRANSACTION
-      await provider.addTransaction(widget.customerName, {
+      /// 🔥 NO WAIT (FAST UX)
+      provider.addTransaction(widget.customerName, {
         'amount': double.parse(amount),
         'note': noteController.text,
         'type': widget.isGiven ? 'GIVEN' : 'RECEIVED',
       });
 
-      /// CLOSE SCREEN
+      /// 🔥 INSTANT BACK
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.pop(context, true); // 👈 IMPORTANT
       }
     } catch (e) {
       debugPrint("Transaction Error: $e");
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Error saving transaction")));
+      ).showSnackBar(const SnackBar(content: Text("Error saving transaction")));
     }
   }
 

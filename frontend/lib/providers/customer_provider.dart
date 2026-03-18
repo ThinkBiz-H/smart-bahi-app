@@ -774,52 +774,100 @@ class CustomerProvider extends ChangeNotifier {
   //     await sendSMS(customer.mobile, message);
   //   }
   // }
+  // Future addTransaction(String name, Map transaction) async {
+  //   final settings = Hive.box('settings');
+  //   final ownerMobile = settings.get('mobile');
+
+  //   final customer = getCustomer(name);
+
+  //   if (customer.id.isEmpty) return;
+
+  //   try {
+  //     // 🔥 DUPLICATE CHECK (IMPORTANT)
+  //     bool alreadyExists = customer.transactions.any(
+  //       (t) =>
+  //           t["note"] == transaction["note"] &&
+  //           t["amount"] == transaction["amount"] &&
+  //           t["type"] == transaction["type"],
+  //     );
+
+  //     if (alreadyExists) {
+  //       print("⚠️ Duplicate transaction ignored");
+  //       return;
+  //     }
+
+  //     await ApiService.addTransaction({
+  //       "ownerMobile": ownerMobile,
+  //       "customerId": customer.id,
+  //       "type": transaction["type"] == "GIVEN" ? "gave" : "received",
+  //       "amount": transaction["amount"],
+  //       "note": transaction["note"],
+  //     });
+
+  //     // 🔥 RELOAD FROM SERVER (SYNC FIX)
+  //     await loadTransactions(customer.id, customer.name);
+  //   } catch (e) {
+  //     print("API error: $e");
+  //   }
+
+  //   notifyListeners();
+
+  //   /// SMS
+  //   final message =
+  //       "Hi ${customer.name},\n"
+  //       "₹${transaction["amount"]} ${transaction["type"] == "GIVEN" ? "udhaar diya" : "paisa mila"}.\n"
+  //       "SmartBahi";
+
+  //   if (customer.smsEnabled) {
+  //     await sendSMS(customer.mobile, message);
+  //   }
+  // }
+
   Future addTransaction(String name, Map transaction) async {
     final settings = Hive.box('settings');
     final ownerMobile = settings.get('mobile');
 
     final customer = getCustomer(name);
-
     if (customer.id.isEmpty) return;
 
-    try {
-      // 🔥 DUPLICATE CHECK (IMPORTANT)
-      bool alreadyExists = customer.transactions.any(
-        (t) =>
-            t["note"] == transaction["note"] &&
-            t["amount"] == transaction["amount"] &&
-            t["type"] == transaction["type"],
-      );
+    /// 🔥 INSTANT UI UPDATE (NO WAIT)
+    customer.transactions.add({
+      "amount": transaction["amount"],
+      "type": transaction["type"],
+      "note": transaction["note"],
+      "time": DateTime.now().toIso8601String(),
+    });
 
-      if (alreadyExists) {
-        print("⚠️ Duplicate transaction ignored");
-        return;
+    notifyListeners(); // ⚡ instant refresh
+
+    /// 🔥 BACKEND CALL (BACKGROUND)
+    Future(() async {
+      try {
+        await ApiService.addTransaction({
+          "ownerMobile": ownerMobile,
+          "customerId": customer.id,
+          "type": transaction["type"] == "GIVEN" ? "gave" : "received",
+          "amount": transaction["amount"],
+          "note": transaction["note"],
+        });
+
+        /// 🔥 SYNC AGAIN (SAFE)
+        await loadTransactions(customer.id, customer.name);
+      } catch (e) {
+        print("API error: $e");
       }
+    });
 
-      await ApiService.addTransaction({
-        "ownerMobile": ownerMobile,
-        "customerId": customer.id,
-        "type": transaction["type"] == "GIVEN" ? "gave" : "received",
-        "amount": transaction["amount"],
-        "note": transaction["note"],
-      });
-
-      // 🔥 RELOAD FROM SERVER (SYNC FIX)
-      await loadTransactions(customer.id, customer.name);
-    } catch (e) {
-      print("API error: $e");
-    }
-
-    notifyListeners();
-
-    /// SMS
-    final message =
-        "Hi ${customer.name},\n"
-        "₹${transaction["amount"]} ${transaction["type"] == "GIVEN" ? "udhaar diya" : "paisa mila"}.\n"
-        "SmartBahi";
-
+    /// 🔥 SMS (NON-BLOCKING)
     if (customer.smsEnabled) {
-      await sendSMS(customer.mobile, message);
+      Future(() {
+        final message =
+            "Hi ${customer.name},\n"
+            "₹${transaction["amount"]} ${transaction["type"] == "GIVEN" ? "udhaar diya" : "paisa mila"}.\n"
+            "SmartBahi";
+
+        sendSMS(customer.mobile, message);
+      });
     }
   }
 

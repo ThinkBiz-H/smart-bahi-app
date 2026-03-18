@@ -268,13 +268,33 @@ class ApiService {
 
   /// ================= OTP =================
 
+  // static Future sendOtp(String mobile) async {
+  //   final res = await http.post(
+  //     Uri.parse("$baseUrl/auth/send-otp"),
+  //     headers: headers,
+  //     body: jsonEncode({"mobile": mobile}),
+  //   );
+  //   return jsonDecode(res.body);
+  // }
   static Future sendOtp(String mobile) async {
-    final res = await http.post(
-      Uri.parse("$baseUrl/auth/send-otp"),
-      headers: headers,
-      body: jsonEncode({"mobile": mobile}),
-    );
-    return jsonDecode(res.body);
+    try {
+      final res = await http.post(
+        Uri.parse("$baseUrl/auth/send-otp"),
+        headers: headers,
+        body: jsonEncode({"mobile": mobile}),
+      );
+
+      print("STATUS: ${res.statusCode}");
+      print("BODY: ${res.body}");
+
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body);
+      } else {
+        return {"success": false, "message": "Server error ${res.statusCode}"};
+      }
+    } catch (e) {
+      return {"success": false, "message": "Network error: $e"};
+    }
   }
 
   static Future verifyOtp(
