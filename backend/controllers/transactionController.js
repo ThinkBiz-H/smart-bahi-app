@@ -97,9 +97,11 @@
 // };
 
 // aaj ka code hai //
+//
 const Transaction = require("../models/Transaction");
 const Customer = require("../models/Customer");
 const { sendPhoneSMS } = require("../services/phoneSMSService");
+const mongoose = require("mongoose");
 
 /// ================= ADD TRANSACTION =================
 
@@ -153,72 +155,7 @@ exports.addTransaction = async (req, res) => {
   }
 };
 
-/// ================= GET ALL TRANSACTIONS (DATE FILTER) =================
-
-exports.getTransactions = async (req, res) => {
-  try {
-    const { startDate, endDate } = req.query;
-
-    let filter = {};
-
-    // ✅ DATE FILTER
-    if (startDate && endDate) {
-      filter.createdAt = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate + "T23:59:59.999Z"),
-      };
-    }
-
-    const transactions = await Transaction.find(filter).sort({
-      createdAt: -1,
-    });
-
-    res.status(200).json({
-      success: true,
-      count: transactions.length,
-      data: transactions,
-    });
-  } catch (error) {
-    console.error("Fetch Transaction Error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-/// ================= GET CUSTOMER TRANSACTIONS =================
-
-// exports.getCustomerTransactions = async (req, res) => {
-//   try {
-//     const { customerId } = req.params;
-
-//     if (!customerId) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Customer ID required",
-//       });
-//     }
-
-//     const transactions = await Transaction.find({ customerId }).sort({
-//       createdAt: -1,
-//     });
-
-//     res.status(200).json({
-//       success: true,
-//       count: transactions.length,
-//       data: transactions,
-//     });
-//   } catch (error) {
-//     console.error("Fetch Transaction Error:", error);
-
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-const mongoose = require("mongoose");
+/// ================= GET ALL TRANSACTIONS (FINAL FIX) =================
 
 exports.getTransactions = async (req, res) => {
   try {
@@ -226,7 +163,7 @@ exports.getTransactions = async (req, res) => {
 
     let filter = {};
 
-    // ✅ CUSTOMER FILTER (MAIN FIX 🔥)
+    // ✅ CUSTOMER FILTER
     if (customerId) {
       filter.customerId = new mongoose.Types.ObjectId(customerId);
     }
@@ -256,5 +193,4 @@ exports.getTransactions = async (req, res) => {
       message: error.message,
     });
   }
-
 };

@@ -12,23 +12,15 @@
 // module.exports = router;
 
 // aaj ka code hai  //
-
 const express = require("express");
 const router = express.Router();
 
-const {
-  addTransaction,
-  getCustomerTransactions,
-  getTransactions, // ✅ add this
-} = require("../controllers/transactionController");
+const transactionController = require("../controllers/transactionController");
 
-// ✅ ADD TRANSACTION
-router.post("/add", addTransaction);
+// ADD
+router.post("/add", transactionController.addTransaction);
 
-// ✅ GET ALL (DATE FILTER)
-router.get("/", getTransactions);
-
-// ✅ GET BY CUSTOMER (always LAST me rakho)
-router.get("/:customerId", getCustomerTransactions);
+// GET ALL (DATE FILTER)
+router.get("/", transactionController.getTransactions);
 
 module.exports = router;
