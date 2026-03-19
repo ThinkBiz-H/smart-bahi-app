@@ -1,107 +1,6 @@
-// const Transaction = require("../models/Transaction");
-// const Customer = require("../models/Customer");
-// const { sendPhoneSMS } = require("../services/phoneSMSService");
-
-// /// ================= ADD TRANSACTION =================
-
-// exports.addTransaction = async (req, res) => {
-//   try {
-//     const { ownerMobile, customerId, type, amount, note } = req.body;
-
-//     /// ================= VALIDATION =================
-
-//     if (!ownerMobile || !customerId || !type || !amount) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Required fields missing",
-//       });
-//     }
-
-//     /// ================= CREATE TRANSACTION =================
-
-//     const transaction = new Transaction({
-//       ownerMobile,
-//       customerId,
-//       type,
-//       amount,
-//       note,
-//     });
-
-//     await transaction.save();
-
-//     /// ================= FETCH CUSTOMER =================
-
-//     const customer = await Customer.findById(customerId);
-
-//     /// ================= SEND SMS =================
-
-//     if (customer && customer.mobile) {
-//       let message = "";
-
-//       if (type === "credit") {
-//         message = `₹${amount} received from ${customer.name}. Thank you! - Smart Bahi`;
-//       } else {
-//         message = `₹${amount} added to your account. - Smart Bahi`;
-//       }
-
-//       await sendPhoneSMS(customer.mobile, message);
-//     }
-
-//     /// ================= RESPONSE =================
-
-//     res.status(200).json({
-//       success: true,
-//       data: transaction,
-//       message: "Transaction saved successfully",
-//     });
-//   } catch (error) {
-//     console.error("Transaction Error:", error);
-
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
-
-// /// ================= GET CUSTOMER TRANSACTIONS =================
-
-// exports.getCustomerTransactions = async (req, res) => {
-//   try {
-//     const { customerId } = req.params;
-
-//     if (!customerId) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Customer ID required",
-//       });
-//     }
-
-//     const transactions = await Transaction.find({ customerId }).sort({
-//       createdAt: -1,
-//     });
-
-//     res.status(200).json({
-//       success: true,
-//       count: transactions.length,
-//       data: transactions,
-//     });
-//   } catch (error) {
-//     console.error("Fetch Transaction Error:", error);
-
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
-
-// aaj ka code hai //
-//
 const Transaction = require("../models/Transaction");
 const Customer = require("../models/Customer");
 const { sendPhoneSMS } = require("../services/phoneSMSService");
-const mongoose = require("mongoose");
 
 /// ================= ADD TRANSACTION =================
 
@@ -109,12 +8,16 @@ exports.addTransaction = async (req, res) => {
   try {
     const { ownerMobile, customerId, type, amount, note } = req.body;
 
+    /// ================= VALIDATION =================
+
     if (!ownerMobile || !customerId || !type || !amount) {
       return res.status(400).json({
         success: false,
         message: "Required fields missing",
       });
     }
+
+    /// ================= CREATE TRANSACTION =================
 
     const transaction = new Transaction({
       ownerMobile,
@@ -126,7 +29,11 @@ exports.addTransaction = async (req, res) => {
 
     await transaction.save();
 
+    /// ================= FETCH CUSTOMER =================
+
     const customer = await Customer.findById(customerId);
+
+    /// ================= SEND SMS =================
 
     if (customer && customer.mobile) {
       let message = "";
@@ -139,6 +46,8 @@ exports.addTransaction = async (req, res) => {
 
       await sendPhoneSMS(customer.mobile, message);
     }
+
+    /// ================= RESPONSE =================
 
     res.status(200).json({
       success: true,
@@ -155,28 +64,20 @@ exports.addTransaction = async (req, res) => {
   }
 };
 
-/// ================= GET ALL TRANSACTIONS (FINAL FIX) =================
+/// ================= GET CUSTOMER TRANSACTIONS =================
 
-exports.getTransactions = async (req, res) => {
+exports.getCustomerTransactions = async (req, res) => {
   try {
-    const { startDate, endDate, customerId } = req.query;
+    const { customerId } = req.params;
 
-    let filter = {};
-
-    // ✅ CUSTOMER FILTER
-    if (customerId) {
-      filter.customerId = new mongoose.Types.ObjectId(customerId);
+    if (!customerId) {
+      return res.status(400).json({
+        success: false,
+        message: "Customer ID required",
+      });
     }
 
-    // ✅ DATE FILTER
-    if (startDate && endDate) {
-      filter.createdAt = {
-        $gte: new Date(startDate + "T00:00:00.000Z"),
-        $lte: new Date(endDate + "T23:59:59.999Z"),
-      };
-    }
-
-    const transactions = await Transaction.find(filter).sort({
+    const transactions = await Transaction.find({ customerId }).sort({
       createdAt: -1,
     });
 
@@ -194,3 +95,6 @@ exports.getTransactions = async (req, res) => {
     });
   }
 };
+
+// aaj ka code hai //
+//

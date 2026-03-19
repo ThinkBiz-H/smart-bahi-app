@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../features/billing/models/bill_model.dart';
 import 'customer_provider.dart';
