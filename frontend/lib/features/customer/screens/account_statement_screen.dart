@@ -267,11 +267,28 @@ class _AccountStatementScreenState extends State<AccountStatementScreen> {
                 ),
               );
 
+              // if (result != null) {
+              //   setState(() {
+              //     startDate = result["start"];
+              //     endDate = result["end"];
+              //   });
+              // }
               if (result != null) {
+                DateTime start = result["start"];
+                DateTime end = result["end"];
+
                 setState(() {
-                  startDate = result["start"];
-                  endDate = result["end"];
+                  startDate = start;
+                  endDate = end;
                 });
+
+                // 🔥 API CALL (MAIN FIX)
+                for (var c in customers) {
+                  await Provider.of<CustomerProvider>(
+                    context,
+                    listen: false,
+                  ).fetchTransactionsByDate(c.id, c.name, start, end);
+                }
               }
             },
             child: Container(

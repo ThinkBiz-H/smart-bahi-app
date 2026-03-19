@@ -190,18 +190,56 @@ exports.getTransactions = async (req, res) => {
 
 /// ================= GET CUSTOMER TRANSACTIONS =================
 
-exports.getCustomerTransactions = async (req, res) => {
-  try {
-    const { customerId } = req.params;
+// exports.getCustomerTransactions = async (req, res) => {
+//   try {
+//     const { customerId } = req.params;
 
-    if (!customerId) {
-      return res.status(400).json({
-        success: false,
-        message: "Customer ID required",
-      });
+//     if (!customerId) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Customer ID required",
+//       });
+//     }
+
+//     const transactions = await Transaction.find({ customerId }).sort({
+//       createdAt: -1,
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       count: transactions.length,
+//       data: transactions,
+//     });
+//   } catch (error) {
+//     console.error("Fetch Transaction Error:", error);
+
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+const mongoose = require("mongoose");
+
+exports.getTransactions = async (req, res) => {
+  try {
+    const { startDate, endDate, customerId } = req.query;
+
+    let filter = {};
+
+    // ✅ CUSTOMER FILTER (MAIN FIX 🔥)
+    if (customerId) {
+      filter.customerId = new mongoose.Types.ObjectId(customerId);
     }
 
-    const transactions = await Transaction.find({ customerId }).sort({
+    // ✅ DATE FILTER
+    if (startDate && endDate) {
+      filter.createdAt = {
+        $gte: new Date(startDate + "T00:00:00.000Z"),
+        $lte: new Date(endDate + "T23:59:59.999Z"),
+      };
+    }
+
+    const transactions = await Transaction.find(filter).sort({
       createdAt: -1,
     });
 
@@ -218,4 +256,5 @@ exports.getCustomerTransactions = async (req, res) => {
       message: error.message,
     });
   }
+
 };

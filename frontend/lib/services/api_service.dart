@@ -483,4 +483,18 @@ class ApiService {
 
     return jsonDecode(res.body);
   }
+
+  static Future getFilteredTransactions(
+    String customerId,
+    String start,
+    String end,
+  ) async {
+    final res = await http.get(
+      Uri.parse(
+        "$baseUrl/api/transactions?startDate=$start&endDate=$end&customerId=$customerId",
+      ),
+    );
+
+    return jsonDecode(res.body);
+  }
 }
