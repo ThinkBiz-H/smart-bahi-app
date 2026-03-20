@@ -220,21 +220,19 @@ class _AccountStatementScreenState extends State<AccountStatementScreen> {
     final customers = provider.customers;
 
     /// 🔥 MERGE + FILTER ALL TX
-    List<Map<String, dynamic>> allTx = [];
 
-    for (var c in customers) {
-      for (var tx in c.transactions) {
-        final time = DateTime.tryParse(tx["time"] ?? "") ?? DateTime.now();
-        if (isInRange(time)) {
-          allTx.add({
-            "name": c.name,
+    final allTx =
+        provider.allTransactions.map((tx) {
+          return {
+            "name": tx["customerId"]?["name"] ?? "Walk-in",
             "amount": tx["amount"],
-            "type": tx["type"],
-            "time": tx["time"],
-          });
-        }
-      }
-    }
+            "type": tx["type"] == "gave" ? "GIVEN" : "RECEIVED",
+            "time": tx["createdAt"],
+          };
+        }).toList()..sort(
+          (a, b) =>
+              DateTime.parse(a["time"]).compareTo(DateTime.parse(b["time"])),
+        );
 
     /// CALCULATIONS
     double totalCredit = 0;
@@ -283,12 +281,16 @@ class _AccountStatementScreenState extends State<AccountStatementScreen> {
                 });
 
                 // 🔥 API CALL (MAIN FIX)
-                for (var c in customers) {
-                  await Provider.of<CustomerProvider>(
-                    context,
-                    listen: false,
-                  ).fetchTransactionsByDate(c.id, c.name, start, end);
-                }
+                // for (var c in customers) {
+                //   await Provider.of<CustomerProvider>(
+                //     context,
+                //     listen: false,
+                //   ).fetchTransactionsByDate(c.id, c.name, start, end);
+                // }
+                await Provider.of<CustomerProvider>(
+                  context,
+                  listen: false,
+                ).fetchAllTransactionsByDate(start, end);
               }
             },
             child: Container(
@@ -300,17 +302,33 @@ class _AccountStatementScreenState extends State<AccountStatementScreen> {
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.calendar_today, color: Colors.green, size: 18),
-                  SizedBox(width: 6),
+                // children: const [
+                //   Icon(Icons.calendar_today, color: Colors.green, size: 18),
+                //   SizedBox(width: 6),
+                //   Text(
+                //     "Today",
+                //     style: TextStyle(
+                //       color: Colors.green,
+                //       fontWeight: FontWeight.bold,
+                //     ),
+                //   ),
+                //   Icon(Icons.keyboard_arrow_down, color: Colors.green),
+                // ],
+                children: [
+                  const Icon(
+                    Icons.calendar_today,
+                    color: Colors.green,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
                   Text(
-                    "Today",
-                    style: TextStyle(
+                    dateText,
+                    style: const TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Icon(Icons.keyboard_arrow_down, color: Colors.green),
+                  const Icon(Icons.keyboard_arrow_down, color: Colors.green),
                 ],
               ),
             ),

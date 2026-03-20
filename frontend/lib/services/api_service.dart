@@ -268,14 +268,7 @@ class ApiService {
 
   /// ================= OTP =================
 
-  // static Future sendOtp(String mobile) async {
-  //   final res = await http.post(
-  //     Uri.parse("$baseUrl/auth/send-otp"),
-  //     headers: headers,
-  //     body: jsonEncode({"mobile": mobile}),
-  //   );
-  //   return jsonDecode(res.body);
-  // }
+
   static Future sendOtp(String mobile) async {
     try {
       final res = await http.post(
