@@ -201,7 +201,6 @@
 // };
 
 ///20/3/25
-
 const Transaction = require("../models/Transaction");
 const Customer = require("../models/Customer");
 const { sendPhoneSMS } = require("../services/phoneSMSService");
@@ -292,7 +291,7 @@ exports.getCustomerTransactions = async (req, res) => {
   }
 };
 
-/// ================= GET TRANSACTIONS BY DATE RANGE =================
+/// ================= GET TRANSACTIONS BY DATE RANGE (SINGLE CUSTOMER) =================
 
 exports.getTransactionsByDateRange = async (req, res) => {
   try {
@@ -324,6 +323,46 @@ exports.getTransactionsByDateRange = async (req, res) => {
     });
   } catch (error) {
     console.error("Date Filter Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/// ================= GET ALL TRANSACTIONS BY DATE RANGE (STATEMENT 🔥) =================
+
+exports.getAllTransactionsByDateRange = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.body;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "startDate and endDate are required",
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const transactions = await Transaction.find({
+      createdAt: {
+        $gte: start,
+        $lte: end,
+      },
+    })
+      .populate("customerId", "name mobile") // 🔥 important
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: transactions.length,
+      data: transactions,
+    });
+  } catch (error) {
+    console.error("All Date Filter Error:", error);
     res.status(500).json({
       success: false,
       message: error.message,

@@ -10,7 +10,6 @@
 // router.get("/:customerId", getCustomerTransactions);
 
 // module.exports = router;
-
 const express = require("express");
 const router = express.Router();
 
@@ -18,16 +17,20 @@ const {
   addTransaction,
   getCustomerTransactions,
   getTransactionsByDateRange,
+  getAllTransactionsByDateRange, // ✅ NEW
 } = require("../controllers/transactionController");
 
 // ================= EXISTING =================
 
 router.post("/add", addTransaction);
 
-// ✅ IMPORTANT: ye upar hona chahiye
+// ✅ Single customer filter
 router.post("/by-date", getTransactionsByDateRange);
 
-// 👇 ye hamesha last me
+// ✅ 🔥 ALL customers statement (IMPORTANT)
+router.post("/all-by-date", getAllTransactionsByDateRange);
+
+// 👇 ye hamesha last me (dynamic route)
 router.get("/:customerId", getCustomerTransactions);
 
 module.exports = router;
