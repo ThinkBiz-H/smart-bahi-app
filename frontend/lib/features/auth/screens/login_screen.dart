@@ -345,39 +345,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool loading = false;
 
-  // Future<void> sendOtp() async {
-  //   if (_formKey.currentState?.validate() ?? false) {
-  //     setState(() {
-  //       loading = true;
-  //     });
-
-  //     try {
-  //       final res = await ApiService.sendOtp(phoneController.text);
-
-  //       if (res["success"] == true || res["message"] != null) {
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder: (_) => OTPScreen(phone: phoneController.text),
-  //           ),
-  //         );
-  //       } else {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(content: Text(res["message"] ?? "OTP failed")),
-  //         );
-  //       }
-  //     } catch (e) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Server error")),
-  //       );
-  //     }
-
-  //     setState(() {
-  //       loading = false;
-  //     });
-  //   }
-  // }
-
+ 
   Future<void> sendOtp() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {

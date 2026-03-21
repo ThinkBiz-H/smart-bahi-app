@@ -22,13 +22,14 @@
 //   List<StockItem> stockItems = [];
 //   List<StockItem> suggestions = [];
 
+//   StockItem? selectedItem; // 🔥 NEW
+
 //   @override
 //   void initState() {
 //     super.initState();
 //     stockItems = Hive.box<StockItem>('stock').values.toList();
 //   }
 
-//   /// 🔥 FIX 1: LIVE SEARCH (NEW ITEMS DIKHEGE)
 //   void searchItem(String value) {
 //     final box = Hive.box<StockItem>('stock');
 //     stockItems = box.values.toList();
@@ -37,14 +38,26 @@
 //         .where((e) => e.name.toLowerCase().contains(value.toLowerCase()))
 //         .toList();
 
+//     selectedItem = null;
+
+//     for (var item in stockItems) {
+//       if (item.name.toLowerCase().trim() == value.toLowerCase().trim()) {
+//         selectedItem = item;
+//         break;
+//       }
+//     }
+
 //     setState(() {});
 //   }
 
 //   void selectStockItem(StockItem item) {
+//     selectedItem = item; // 🔥 IMPORTANT
+
 //     nameController.text = item.name;
 //     rateController.text = item.rate;
 //     selectedUnit = item.unit;
 //     gstPercent = double.tryParse(item.tax.replaceAll("%", "")) ?? 0;
+
 //     suggestions.clear();
 //     setState(() {});
 //   }
@@ -73,12 +86,15 @@
 //     ]);
 //   }
 
-//   /// 🔥 BUTTON CLICK (FILHAAL SIMPLE)
+//   /// 🔥 UPDATED NAVIGATION
 //   Future<void> openAddStockScreen() async {
 //     await Navigator.push(
 //       context,
 //       MaterialPageRoute(
-//         builder: (_) => AddStockItemScreen(prefillName: nameController.text),
+//         builder: (_) => AddStockItemScreen(
+//           prefillName: nameController.text,
+//           item: selectedItem, // 🔥 MAGIC
+//         ),
 //       ),
 //     );
 
@@ -93,14 +109,14 @@
 //         padding: const EdgeInsets.all(16),
 //         child: Column(
 //           children: [
-//             /// 🔎 ITEM NAME
+//             /// ITEM NAME
 //             TextField(
 //               controller: nameController,
 //               decoration: const InputDecoration(labelText: "Item Name"),
 //               onChanged: searchItem,
 //             ),
 
-//             /// AUTO SUGGEST
+//             /// SUGGESTIONS
 //             if (suggestions.isNotEmpty)
 //               Container(
 //                 margin: const EdgeInsets.only(top: 4),
@@ -126,7 +142,7 @@
 
 //             const SizedBox(height: 16),
 
-//             /// QTY + UNIT (UI SAME)
+//             /// QTY + UNIT
 //             Row(
 //               children: [
 //                 Expanded(
@@ -186,13 +202,15 @@
 //               onChanged: (_) => setState(() {}),
 //             ),
 
-//             /// 🔥 BAS YE ADD HUA (UI disturb nahi)
-//             if (nameController.text.isNotEmpty && suggestions.isEmpty)
+//             /// 🔥 SMART BUTTON (FINAL)
+//             if (nameController.text.isNotEmpty)
 //               Padding(
 //                 padding: const EdgeInsets.only(top: 10),
 //                 child: ElevatedButton(
 //                   onPressed: openAddStockScreen,
-//                   child: const Text("Add Stock Item"),
+//                   child: Text(
+//                     selectedItem == null ? "Add Stock Item" : "Update Stock",
+//                   ),
 //                 ),
 //               ),
 
@@ -212,6 +230,8 @@
 //     );
 //   }
 // }
+
+// AddItemScreen FIXED 🔥
 
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -237,17 +257,27 @@ class _AddItemScreenState extends State<AddItemScreen> {
   List<StockItem> stockItems = [];
   List<StockItem> suggestions = [];
 
-  StockItem? selectedItem; // 🔥 NEW
+  StockItem? selectedItem;
 
   @override
   void initState() {
     super.initState();
-    stockItems = Hive.box<StockItem>('stock').values.toList();
+    loadStock();
+  }
+
+  void loadStock() {
+    final box = Hive.box<StockItem>('stock');
+    stockItems = box.values.toList();
   }
 
   void searchItem(String value) {
-    final box = Hive.box<StockItem>('stock');
-    stockItems = box.values.toList();
+    if (value.isEmpty) {
+      setState(() {
+        suggestions.clear();
+        selectedItem = null;
+      });
+      return;
+    }
 
     suggestions = stockItems
         .where((e) => e.name.toLowerCase().contains(value.toLowerCase()))
@@ -266,7 +296,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
   }
 
   void selectStockItem(StockItem item) {
-    selectedItem = item; // 🔥 IMPORTANT
+    selectedItem = item;
 
     nameController.text = item.name;
     rateController.text = item.rate;
@@ -301,18 +331,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
     ]);
   }
 
-  /// 🔥 UPDATED NAVIGATION
   Future<void> openAddStockScreen() async {
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => AddStockItemScreen(
           prefillName: nameController.text,
-          item: selectedItem, // 🔥 MAGIC
+          item: selectedItem,
         ),
       ),
     );
 
+    loadStock(); // 🔥 reload after coming back
     searchItem(nameController.text);
   }
 
@@ -331,23 +361,23 @@ class _AddItemScreenState extends State<AddItemScreen> {
               onChanged: searchItem,
             ),
 
-            /// SUGGESTIONS
+            /// 🔥 SUGGESTIONS FIXED
             if (suggestions.isNotEmpty)
               Container(
+                height: 150,
                 margin: const EdgeInsets.only(top: 4),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: ListView.builder(
-                  shrinkWrap: true,
                   itemCount: suggestions.length,
                   itemBuilder: (_, i) {
                     final item = suggestions[i];
                     return ListTile(
                       title: Text(item.name),
                       subtitle: Text(
-                        "Stock: ${item.qty} ${item.unit} | Rate: ₹${item.rate}",
+                        "Stock: ${item.qty} ${item.unit} | ₹${item.rate}",
                       ),
                       onTap: () => selectStockItem(item),
                     );
@@ -417,7 +447,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               onChanged: (_) => setState(() {}),
             ),
 
-            /// 🔥 SMART BUTTON (FINAL)
+            /// BUTTON
             if (nameController.text.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 10),

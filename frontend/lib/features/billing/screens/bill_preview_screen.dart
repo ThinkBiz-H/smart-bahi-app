@@ -1158,7 +1158,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/customer_provider.dart';
 import '../../../services/api_service.dart';
 import '../../billing/screens/billing_screen.dart';
-
+import '../../plan/screens/plan_screen.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -1273,6 +1273,56 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
   Future<void> saveBillWithoutNavigation() async {
     try {
       final provider = context.read<CustomerProvider>();
+      final box = Hive.box('bills');
+      final settingsBox = Hive.box('settings');
+
+      bool isPremium = settingsBox.get('isPremium') ?? false;
+
+      if (!isPremium) {
+        final today = DateTime.now();
+        int count = 0;
+
+        for (var t in box.values) {
+          final date = DateTime.parse(t['date']);
+
+          if (date.year == today.year &&
+              date.month == today.month &&
+              date.day == today.day) {
+            count++;
+          }
+        }
+
+        if (count >= 1100) {
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(
+          //     content: Text("Daily limit reached. Upgrade to continue 🚀"),
+          //   ),
+          // );
+
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (_) => PlanScreen()),
+          // );
+
+          // return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                "Daily limit reached. Upgrade to continue 🚀   Bill not saved",
+              ),
+            ),
+          );
+
+          Future.delayed(const Duration(milliseconds: 300), () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => PlanScreen()),
+            );
+          });
+
+          return;
+        }
+      }
       final settings = Hive.box('settings');
       final ownerMobile = settings.get('mobile');
 
@@ -1295,10 +1345,18 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
         "paid": isPaid,
       };
 
+      // if (widget.billKey != null) {
+      //   await ApiService.updateBill(widget.billKey!, billData);
+      // } else {
+      //   await ApiService.addBill(billData);
+      // }
       if (widget.billKey != null) {
         await ApiService.updateBill(widget.billKey!, billData);
       } else {
         await ApiService.addBill(billData);
+
+        /// 🔥 MAIN FIX
+        await box.add({...billData, "date": DateTime.now().toIso8601String()});
       }
 
       if (widget.billKey != null) {
@@ -1475,7 +1533,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                 
+
                     children: [
                       Center(
                         child: Column(
