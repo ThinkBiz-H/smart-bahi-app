@@ -1475,74 +1475,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    // children: [
-                    //   Center(
-                    //     child: Column(
-                    //       children: [
-                    //         Text(
-                    //           widget.customerName,
-                    //           style: const TextStyle(
-                    //             fontSize: 20,
-                    //             fontWeight: FontWeight.bold,
-                    //           ),
-                    //         ),
-                    //         Text("Mobile: ${widget.mobile}"),
-                    //         Text(widget.address),
-                    //       ],
-                    //     ),
-                    //   ),
-                    //   const SizedBox(height: 20),
-
-                    //   Row(
-                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //     children: [
-                    //       Text("Bill No: ${widget.billNumber}"),
-                    //       Text(
-                    //         "${widget.billDate.day}/${widget.billDate.month}/${widget.billDate.year}",
-                    //       ),
-                    //     ],
-                    //   ),
-
-                    //   const Divider(),
-
-                    //   ...widget.items.map(
-                    //     (item) => Row(
-                    //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //       children: [
-                    //         Text(item['name']),
-                    //         Text("${item['qty']}"),
-                    //         Text("₹${item['rate']}"),
-                    //         Text("₹${item['baseAmount']}"),
-                    //       ],
-                    //     ),
-                    //   ),
-
-                    //   const Divider(),
-
-                    //   row("Sub Total", widget.subTotal),
-                    //   row("Extra Charge", widget.charges),
-                    //   row("Discount", -widget.discount),
-                    //   row("GST", widget.gstTotal),
-                    //   row("Cess", widget.cessTotal),
-
-                    //   const Divider(),
-                    //   row("TOTAL", widget.grandTotal, bold: true),
-
-                    //   if (savedPaid)
-                    //     const Padding(
-                    //       padding: EdgeInsets.only(top: 8),
-                    //       child: Center(
-                    //         child: Text(
-                    //           "PAID",
-                    //           style: TextStyle(
-                    //             color: Colors.green,
-                    //             fontSize: 18,
-                    //             fontWeight: FontWeight.bold,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //     ),
-                    // ],
+                 
                     children: [
                       Center(
                         child: Column(
