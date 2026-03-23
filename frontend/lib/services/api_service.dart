@@ -491,15 +491,16 @@ class ApiService {
   }
 
   static Future<void> updateProduct(String code, Map data) async {
-    final url = Uri.parse("$baseUrl/products/update/$code");
-
-    final res = await http.put(
-      url,
+    final response = await http.put(
+      Uri.parse("$baseUrl/products/update/$code"), // ✅ FIX
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(data),
     );
 
-    if (res.statusCode != 200) {
+    print("UPDATE STATUS: ${response.statusCode}");
+    print("UPDATE BODY: ${response.body}");
+
+    if (response.statusCode != 200) {
       throw Exception("Failed to update product");
     }
   }

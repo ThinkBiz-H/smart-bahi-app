@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../../stock/models/stock_item.dart';
@@ -61,6 +59,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
     Navigator.pop(context, [
       {
         "name": nameController.text,
+        "productCode": selectedStockItem?.productCode,
         "qty": enteredQty.toDouble(),
         "unit": selectedUnit,
         "rate": double.parse(rateController.text),

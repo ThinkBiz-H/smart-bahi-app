@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'create_bill_screen.dart';
+import 'bill_preview_screen.dart';
 
 class SelectTemplateScreen extends StatefulWidget {
   const SelectTemplateScreen({super.key});
@@ -78,11 +78,14 @@ class _SelectTemplateScreenState extends State<SelectTemplateScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0C2752),
                 ),
+                // onPressed: () {
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (_) => const CreateBillScreen()),
+                //   );
+                // },
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CreateBillScreen()),
-                  );
+                  Navigator.pop(context, true);
                 },
                 child: const Text('Continue'),
               ),

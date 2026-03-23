@@ -993,6 +993,12 @@ class _AddStockItemScreenState extends State<AddStockItemScreen> {
   }
 
   Future<void> saveItem() async {
+    String productCode = codeCtrl.text.isNotEmpty
+        ? codeCtrl.text.trim()
+        : DateTime.now().millisecondsSinceEpoch.toString();
+
+    // IMPORTANT
+    codeCtrl.text = productCode;
     if (isSaving) return;
     isSaving = true;
 
@@ -1014,7 +1020,18 @@ class _AddStockItemScreenState extends State<AddStockItemScreen> {
     String key = name.toLowerCase().trim();
 
     /// 🔥 CHECK EXISTING ITEM
-    StockItem? existingItem = box.get(key);
+    StockItem? existingItem;
+
+    for (int i = 0; i < box.length; i++) {
+      final item = box.getAt(i);
+
+      if (item != null &&
+          (item.productCode == productCode ||
+              item.name.toLowerCase().trim() == name.toLowerCase().trim())) {
+        existingItem = item;
+        break;
+      }
+    }
 
     if (existingItem != null) {
       double oldQty = double.tryParse(existingItem.qty) ?? 0;
@@ -1052,9 +1069,6 @@ class _AddStockItemScreenState extends State<AddStockItemScreen> {
     }
 
     /// 🔥 ADD NEW ITEM
-    String productCode = codeCtrl.text.isEmpty
-        ? DateTime.now().millisecondsSinceEpoch.toString()
-        : codeCtrl.text;
 
     final newItem = StockItem(
       name: name,
@@ -1069,7 +1083,7 @@ class _AddStockItemScreenState extends State<AddStockItemScreen> {
       imagePath: imagePath,
     );
 
-    await box.put(key, newItem);
+    await box.add(newItem);
 
     print("NEW ITEM ADDED ✅");
 
@@ -1131,7 +1145,7 @@ class _AddStockItemScreenState extends State<AddStockItemScreen> {
 
             Row(
               children: [
-                Expanded(child: inputField("MRP", mrpCtrl)),
+                Expanded(child: inputField("Buy MRP", mrpCtrl)),
                 const SizedBox(width: 10),
                 Expanded(child: inputField("Qty", qtyCtrl)),
               ],
@@ -1150,7 +1164,7 @@ class _AddStockItemScreenState extends State<AddStockItemScreen> {
             ),
 
             if (showMore) ...[
-              inputField("Rate", rateCtrl),
+              inputField("Sale MRP", rateCtrl),
               const SizedBox(height: 12),
 
               dropdown(

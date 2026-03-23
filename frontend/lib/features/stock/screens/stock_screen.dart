@@ -241,6 +241,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/stock_item.dart';
 import 'edit_item_screen.dart';
 import '../../../services/api_service.dart';
+import 'add_stock_item_screen.dart';
 
 class StockScreen extends StatefulWidget {
   const StockScreen({super.key});
@@ -324,7 +325,9 @@ class _StockScreenState extends State<StockScreen> {
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const EditItemScreen()),
+
+            // MaterialPageRoute(builder: (_) => const EditItemScreen()),
+            MaterialPageRoute(builder: (_) => AddStockItemScreen()),
           );
 
           /// ❌ API reload hata diya

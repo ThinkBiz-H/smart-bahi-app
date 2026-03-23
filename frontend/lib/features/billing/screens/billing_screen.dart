@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'select_template_screen.dart';
+
 import 'bills_history_screen.dart';
+import 'create_bill_screen.dart';
 
 class BillingScreen extends StatelessWidget {
   const BillingScreen({super.key});
@@ -60,10 +61,16 @@ class BillingScreen extends StatelessWidget {
                   height: 48,
                   child: ElevatedButton(
                     onPressed: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (_) => const SelectTemplateScreen(),
+                      //   ),
+                      // );
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const SelectTemplateScreen(),
+                          builder: (_) => const CreateBillScreen(),
                         ),
                       );
                     },

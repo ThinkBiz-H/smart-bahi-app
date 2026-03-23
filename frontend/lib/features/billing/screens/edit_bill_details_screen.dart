@@ -53,11 +53,30 @@ class _EditBillDetailsScreenState extends State<EditBillDetailsScreen> {
     }
   }
 
-  void save() {
+  void save() async {
+    final provider = context.read<CustomerProvider>();
+
+    String name = nameController.text.trim();
+    String mobile = mobileController.text.trim();
+    String address = addressController.text.trim();
+
+    /// 🔥 CHECK EMPTY
+    if (name.isNotEmpty && mobile.isNotEmpty) {
+      final exists = provider.customers.any((c) => c.mobile == mobile);
+
+      /// 🔥 ADD NEW CUSTOMER
+      if (!exists) {
+        await provider.addCustomer(name, mobile, address, "CUSTOMER");
+
+        print("NEW CUSTOMER ADDED ✅");
+      }
+    }
+
+    /// 🔥 RETURN DATA BACK
     Navigator.pop(context, {
-      "name": nameController.text.trim(),
-      "mobile": mobileController.text.trim(),
-      "address": addressController.text.trim(),
+      "name": name,
+      "mobile": mobile,
+      "address": address,
       "billNumber": billNumberController.text.trim(),
       "date": selectedDate,
     });

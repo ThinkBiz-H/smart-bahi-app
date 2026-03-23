@@ -237,6 +237,7 @@ Future<void> main() async {
     Hive.openBox('settings'),
   ]);
 
+  await Hive.box<StockItem>('stock').clear();
   runApp(const MyApp());
 }
 

@@ -31,7 +31,13 @@
 //   String about = 'Add details';
 //   String contactPerson = 'Owner';
 
-//   /// ⭐ SHARE BUSINESS CARD
+//   /// MOBILE CLEAN
+//   String cleanMobileNumber(String mobile) {
+//     final digits = mobile.replaceAll(RegExp(r'\D'), '');
+//     return digits.length > 10 ? digits.substring(digits.length - 10) : digits;
+//   }
+
+//   /// SHARE CARD
 //   void shareBusinessCard() {
 //     final message =
 //         '''
@@ -49,34 +55,36 @@
 //     Share.share(message);
 //   }
 
-//   /// ⭐ LOAD PROFILE FROM BACKEND
+//   /// LOAD PROFILE
 //   Future<void> loadProfile() async {
 //     try {
-//       final cleanMobile = mobile.replaceAll(RegExp(r'\D'), '');
+//       final cleanMobile = cleanMobileNumber(mobile);
 
 //       final res = await ApiService.getProfile(cleanMobile);
 
-//       if (res == null) return;
+//       if (res == null || res["data"] == null) return;
+
+//       final data = res["data"];
 
 //       setState(() {
-//         businessName = res["businessName"]?.toString() ?? businessName;
-//         gst = res["gst"]?.toString() ?? gst;
-//         businessType = res["businessType"]?.toString() ?? businessType;
-//         category = res["category"]?.toString() ?? category;
-//         address = res["address"]?.toString() ?? address;
-//         email = res["email"]?.toString() ?? email;
-//         about = res["about"]?.toString() ?? about;
-//         contactPerson = res["contactPerson"]?.toString() ?? contactPerson;
+//         businessName = data["businessName"]?.toString() ?? businessName;
+//         gst = data["gst"]?.toString() ?? gst;
+//         businessType = data["businessType"]?.toString() ?? businessType;
+//         category = data["category"]?.toString() ?? category;
+//         address = data["address"]?.toString() ?? address;
+//         email = data["email"]?.toString() ?? email;
+//         about = data["about"]?.toString() ?? about;
+//         contactPerson = data["contactPerson"]?.toString() ?? contactPerson;
 //       });
 //     } catch (e) {
 //       debugPrint("Profile load error: $e");
 //     }
 //   }
 
-//   /// ⭐ SAVE PROFILE TO BACKEND
+//   /// SAVE PROFILE
 //   Future<void> saveProfile() async {
 //     try {
-//       final cleanMobile = mobile.replaceAll(RegExp(r'\D'), '');
+//       final cleanMobile = cleanMobileNumber(mobile);
 
 //       await ApiService.updateProfile({
 //         "mobile": cleanMobile,
@@ -116,12 +124,12 @@
 //       logoFile = File(path);
 //     }
 
-//     /// ⭐ backend profile load
 //     Future.microtask(() => loadProfile());
 //   }
 
 //   Future<void> pickLogo() async {
 //     final picker = ImagePicker();
+
 //     final XFile? image = await picker.pickImage(
 //       source: ImageSource.gallery,
 //       imageQuality: 60,
@@ -177,7 +185,6 @@
 
 //       provider.updateBusinessProfile(name: businessName, phone: mobile);
 
-//       /// ⭐ SAVE TO BACKEND
 //       await saveProfile();
 //     }
 //   }
@@ -218,9 +225,7 @@
 //                   ),
 //                 ),
 //                 Text(mobile, style: const TextStyle(color: Colors.grey)),
-
 //                 const SizedBox(height: 12),
-
 //                 ElevatedButton.icon(
 //                   onPressed: shareBusinessCard,
 //                   icon: const Icon(Icons.share),
@@ -361,6 +366,7 @@
 //     );
 //   }
 // }
+
 import 'package:flutter/material.dart';
 import 'edit_field_screen.dart';
 import 'package:image_picker/image_picker.dart';
@@ -372,15 +378,19 @@ import 'package:provider/provider.dart';
 import 'package:frontend/providers/customer_provider.dart';
 import 'dart:convert';
 import 'package:frontend/services/api_service.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
+  // final ScreenshotController screenshotController = ScreenshotController();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final ScreenshotController screenshotController = ScreenshotController();
   final settingsBox = Hive.box('settings');
   File? logoFile;
 
@@ -400,22 +410,91 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return digits.length > 10 ? digits.substring(digits.length - 10) : digits;
   }
 
-  /// SHARE CARD
-  void shareBusinessCard() {
-    final message =
-        '''
-🏪 *$businessName*
+  Future<void> shareBusinessCard() async {
+    try {
+      final controller = ScreenshotController();
 
-👤 Contact: $contactPerson
-📞 Phone: $mobile
-📍 Address: $address
-📧 Email: $email
+      final image = await controller.captureFromWidget(
+        MediaQuery(
+          data: const MediaQueryData(),
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              backgroundColor: Colors.white,
+              body: Center(
+                child: Container(
+                  width: 300,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black12, blurRadius: 10),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Colors.green.shade100,
+                        child: const Icon(
+                          Icons.store,
+                          size: 40,
+                          color: Colors.green,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
 
-Manage your credit easily with SmartBahi App:
-https://play.google.com/store/apps/details?id=com.smartbahi.app
-''';
+                      Text(
+                        businessName,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
 
-    Share.share(message);
+                      const SizedBox(height: 8),
+
+                      Text(
+                        "📞 $mobile",
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      Text(
+                        "📍 $address",
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      Text(
+                        "📧 $email",
+                        style: const TextStyle(color: Colors.black),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      const Text(
+                        "SmartBahi",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/business_card.png');
+
+      await file.writeAsBytes(image);
+
+      await Share.shareXFiles([XFile(file.path)]);
+    } catch (e) {
+      debugPrint("Share error: $e");
+    }
   }
 
   /// LOAD PROFILE
@@ -562,45 +641,51 @@ https://play.google.com/store/apps/details?id=com.smartbahi.app
         padding: const EdgeInsets.all(16),
         children: [
           Center(
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: pickLogo,
-                  child: CircleAvatar(
-                    radius: 44,
-                    backgroundColor: Colors.green.shade100,
-                    backgroundImage: logoFile != null
-                        ? FileImage(logoFile!)
-                        : (logoPath != null && kIsWeb)
-                        ? NetworkImage(logoPath)
-                        : null,
-                    child: logoFile == null && logoPath == null
-                        ? const Icon(Icons.store, size: 40, color: Colors.green)
-                        : null,
+            child: Screenshot(
+              controller: screenshotController,
+              child: Column(
+                children: [
+                  GestureDetector(
+                    onTap: pickLogo,
+                    child: CircleAvatar(
+                      radius: 44,
+                      backgroundColor: Colors.green.shade100,
+                      backgroundImage: logoFile != null
+                          ? FileImage(logoFile!)
+                          : (logoPath != null && kIsWeb)
+                          ? NetworkImage(logoPath)
+                          : null,
+                      child: logoFile == null && logoPath == null
+                          ? const Icon(
+                              Icons.store,
+                              size: 40,
+                              color: Colors.green,
+                            )
+                          : null,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  businessName,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 12),
+                  Text(
+                    businessName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                Text(mobile, style: const TextStyle(color: Colors.grey)),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: shareBusinessCard,
-                  icon: const Icon(Icons.share),
-                  label: const Text("Share Business Card"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0C2752),
+                  Text(mobile, style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: shareBusinessCard,
+                    icon: const Icon(Icons.share),
+                    label: const Text("Share Business Card"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0C2752),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-
           const SizedBox(height: 24),
 
           const _SectionTitle('Business Information'),
