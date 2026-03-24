@@ -504,4 +504,14 @@ class ApiService {
       throw Exception("Failed to update product");
     }
   }
+
+  static Future<Map<String, dynamic>> activatePlan(Map data) async {
+    final res = await http.post(
+      Uri.parse("$baseUrl/auth/activate-plan"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(data),
+    );
+
+    return jsonDecode(res.body);
+  }
 }

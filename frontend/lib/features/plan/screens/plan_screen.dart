@@ -11,23 +11,32 @@
 // }
 
 // class _PlanScreenState extends State<PlanScreen> {
-//   int selectedPlan = 0; // 0 = AdsFree++ ACTIVE
+//   int selectedPlan = 0;
+
 //   final PaymentService paymentService = PaymentService();
+
 //   @override
 //   void initState() {
 //     super.initState();
-//     paymentService.init(
-//       context,
-//       onSuccess: () {
-//         Provider.of<CustomerProvider>(context, listen: false).activatePremium();
 
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           const SnackBar(content: Text("Plan activated successfully")),
-//         );
+//     /// SAFE INIT
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       paymentService.init(
+//         context,
+//         onSuccess: () {
+//           Provider.of<CustomerProvider>(
+//             context,
+//             listen: false,
+//           ).activatePremium();
 
-//         Navigator.pop(context);
-//       },
-//     );
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             const SnackBar(content: Text("Plan activated successfully")),
+//           );
+
+//           Navigator.pop(context);
+//         },
+//       );
+//     });
 //   }
 
 //   @override
@@ -36,13 +45,19 @@
 //     super.dispose();
 //   }
 
+//   int getPrice() {
+//     if (selectedPlan == 1) return 30;
+//     if (selectedPlan == 2) return 99;
+//     return 75;
+//   }
+
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       appBar: AppBar(title: const Text("My plans")),
+//       appBar: AppBar(title: const Text("My Plans")),
 //       body: Column(
 //         children: [
-//           /// TOP INFO BANNER
+//           /// INFO BANNER
 //           Container(
 //             margin: const EdgeInsets.all(16),
 //             padding: const EdgeInsets.all(14),
@@ -73,13 +88,9 @@
 //                   title: "Ads Free++",
 //                   price: "₹75 for 30 days",
 //                   active: true,
-//                   expiry: "Expires on 22 Feb, 2026 (5 days remaining)",
-//                   benefits: const [
-//                     "All Benefits of Unlimited Transactions Plan",
-//                     "No Ads",
-//                   ],
+//                   expiry: "Expires on 22 Feb, 2026",
+//                   benefits: const ["Unlimited Transactions", "No Ads"],
 //                 ),
-
 //                 _planCard(
 //                   index: 1,
 //                   title: "Unlimited Transactions",
@@ -89,21 +100,20 @@
 //                     "Contain Ads",
 //                   ],
 //                 ),
-
 //                 _planCard(
 //                   index: 2,
 //                   title: "Premium",
 //                   price: "₹99 for 30 days",
 //                   benefits: const [
-//                     "All Benefits of Ads Free++ Plan",
-//                     "Unlimited transaction SMS from SmartBahi",
+//                     "All Benefits of Ads Free++",
+//                     "Unlimited transaction SMS",
 //                   ],
 //                 ),
 //               ],
 //             ),
 //           ),
 
-//           /// BOTTOM BUTTON
+//           /// PAYMENT BUTTON
 //           Padding(
 //             padding: const EdgeInsets.all(16),
 //             child: ElevatedButton(
@@ -115,14 +125,9 @@
 //                 ),
 //               ),
 //               onPressed: () {
-//                 int price = 75;
-
-//                 if (selectedPlan == 1) price = 30;
-//                 if (selectedPlan == 2) price = 99;
-
+//                 int price = getPrice();
 //                 paymentService.openCheckout(price);
 //               },
-
 //               child: const Text(
 //                 "Extend Plan (+30 days)",
 //                 style: TextStyle(fontSize: 16, color: Colors.white),
@@ -134,7 +139,6 @@
 //     );
 //   }
 
-//   // PLAN CARD WIDGET
 //   Widget _planCard({
 //     required int index,
 //     required String title,
@@ -146,7 +150,11 @@
 //     final isSelected = selectedPlan == index;
 
 //     return GestureDetector(
-//       onTap: () => setState(() => selectedPlan = index),
+//       onTap: () {
+//         setState(() {
+//           selectedPlan = index;
+//         });
+//       },
 //       child: Container(
 //         margin: const EdgeInsets.only(bottom: 16),
 //         padding: const EdgeInsets.all(16),
@@ -161,10 +169,9 @@
 //         child: Column(
 //           crossAxisAlignment: CrossAxisAlignment.start,
 //           children: [
-//             /// HEADER ROW
 //             Row(
 //               children: [
-//                 const Icon(Icons.nightlight_round, color: Colors.black87),
+//                 const Icon(Icons.workspace_premium),
 //                 const SizedBox(width: 10),
 //                 Text(
 //                   title,
@@ -174,8 +181,6 @@
 //                   ),
 //                 ),
 //                 const Spacer(),
-
-//                 /// ACTIVE BADGE
 //                 if (active)
 //                   Container(
 //                     padding: const EdgeInsets.symmetric(
@@ -187,14 +192,11 @@
 //                       borderRadius: BorderRadius.circular(20),
 //                     ),
 //                     child: const Text(
-//                       "Active Plan",
+//                       "Active",
 //                       style: TextStyle(color: Colors.white, fontSize: 12),
 //                     ),
 //                   ),
-
 //                 const SizedBox(width: 8),
-
-//                 /// RADIO CIRCLE
 //                 Icon(
 //                   isSelected
 //                       ? Icons.radio_button_checked
@@ -206,22 +208,18 @@
 
 //             const SizedBox(height: 8),
 
-//             Text(
-//               price,
-//               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-//             ),
+//             Text(price, style: const TextStyle(fontWeight: FontWeight.bold)),
 
 //             if (expiry != null) ...[
-//               const SizedBox(height: 6),
+//               const SizedBox(height: 4),
 //               Text(expiry, style: const TextStyle(color: Colors.orange)),
 //             ],
 
-//             const Divider(height: 24),
+//             const Divider(),
 
-//             /// BENEFITS
 //             ...benefits.map(
 //               (b) => Padding(
-//                 padding: const EdgeInsets.only(bottom: 8),
+//                 padding: const EdgeInsets.only(bottom: 6),
 //                 child: Row(
 //                   children: [
 //                     const Icon(
@@ -229,27 +227,11 @@
 //                       color: Colors.green,
 //                       size: 18,
 //                     ),
-//                     const SizedBox(width: 8),
+//                     const SizedBox(width: 6),
 //                     Text(b),
 //                   ],
 //                 ),
 //               ),
-//             ),
-
-//             const SizedBox(height: 6),
-
-//             const Row(
-//               children: [
-//                 Icon(Icons.expand_more, color: Colors.green),
-//                 SizedBox(width: 6),
-//                 Text(
-//                   "View More",
-//                   style: TextStyle(
-//                     color: Colors.green,
-//                     fontWeight: FontWeight.w600,
-//                   ),
-//                 ),
-//               ],
 //             ),
 //           ],
 //         ),
@@ -259,9 +241,9 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/services/payment_service.dart';
-import 'package:provider/provider.dart';
-import '../../../providers/customer_provider.dart';
+import '../../../services/api_service.dart';
 
 class PlanScreen extends StatefulWidget {
   const PlanScreen({super.key});
@@ -279,18 +261,37 @@ class _PlanScreenState extends State<PlanScreen> {
   void initState() {
     super.initState();
 
-    /// SAFE INIT
     WidgetsBinding.instance.addPostFrameCallback((_) {
       paymentService.init(
         context,
-        onSuccess: () {
-          Provider.of<CustomerProvider>(
-            context,
-            listen: false,
-          ).activatePremium();
+        onSuccess: () async {
+          final settings = Hive.box('settings');
+          final mobile = settings.get('mobile');
+
+          int days = 30;
+          int dailyLimit = -1;
+          String planName = "pro";
+
+          if (selectedPlan == 0) {
+            planName = "adsfree";
+          } else if (selectedPlan == 1) {
+            planName = "basic";
+          } else if (selectedPlan == 2) {
+            planName = "premium";
+          }
+
+          // 🔥 BACKEND CALL
+          final res = await ApiService.activatePlan({
+            "mobile": mobile,
+            "days": days,
+            "dailyLimit": dailyLimit,
+            "planName": planName,
+          });
+
+          print("PLAN RESPONSE: $res");
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Plan activated successfully")),
+            const SnackBar(content: Text("Plan activated successfully 🚀")),
           );
 
           Navigator.pop(context);
@@ -306,9 +307,9 @@ class _PlanScreenState extends State<PlanScreen> {
   }
 
   int getPrice() {
-    if (selectedPlan == 1) return 30;
-    if (selectedPlan == 2) return 99;
-    return 75;
+    if (selectedPlan == 1) return 1;
+    if (selectedPlan == 2) return 1;
+    return 1;
   }
 
   @override
