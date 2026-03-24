@@ -203,16 +203,99 @@ exports.sendOtp = async (req, res) => {
 
 // ================= VERIFY OTP =================
 
+// exports.verifyOtp = async (req, res) => {
+//   try {
+//     let { mobile, otp, deviceName } = req.body;
+
+//     console.log("VERIFY OTP REQUEST");
+
+//     if (!mobile || !otp) {
+//       return res.json({
+//         success: false,
+//         message: "Mobile and OTP required",
+//       });
+//     }
+
+//     const user = await User.findOne({ mobile });
+
+//     if (!user) {
+//       return res.json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     if (user.otp !== Number(otp)) {
+//       return res.json({
+//         success: false,
+//         message: "Invalid OTP",
+//       });
+//     }
+
+//     if (user.otpExpiry < Date.now()) {
+//       return res.json({
+//         success: false,
+//         message: "OTP expired",
+//       });
+//     }
+
+//     /// 🔥 DEFAULT DEVICE NAME
+//     if (!deviceName) {
+//       deviceName = "Android Device";
+//     }
+
+//     /// 🔥 FIX: REMOVE deviceId COMPLETELY (NO DUPLICATE ERROR)
+//     await Device.updateMany({ mobile }, { isCurrent: false });
+
+//     await Device.findOneAndUpdate(
+//       { mobile }, // ✅ ONLY MOBILE
+//       {
+//         mobile,
+//         deviceName,
+//         isCurrent: true,
+//         lastActive: new Date(),
+//       },
+//       // { upsert: true, new: true },
+//       { upsert: true, returnDocument: "after" },
+//     );
+
+//     console.log("DEVICE SAVED ✅");
+
+//     user.otp = null;
+//     user.otpExpiry = null;
+
+//     await user.save();
+
+//     res.json({
+//       success: true,
+//       message: "Login successful",
+//       user,
+//     });
+//   } catch (error) {
+//     console.log("OTP VERIFY ERROR:", error);
+
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
 exports.verifyOtp = async (req, res) => {
   try {
-    let { mobile, otp, deviceName } = req.body;
-
-    console.log("VERIFY OTP REQUEST");
+    let { mobile, otp, deviceName, deviceId } = req.body;
 
     if (!mobile || !otp) {
       return res.json({
         success: false,
         message: "Mobile and OTP required",
+      });
+    }
+
+    if (!deviceId) {
+      return res.json({
+        success: false,
+        message: "Device ID required",
       });
     }
 
@@ -239,27 +322,24 @@ exports.verifyOtp = async (req, res) => {
       });
     }
 
-    /// 🔥 DEFAULT DEVICE NAME
     if (!deviceName) {
       deviceName = "Android Device";
     }
 
-    /// 🔥 FIX: REMOVE deviceId COMPLETELY (NO DUPLICATE ERROR)
+    // ✅ important
     await Device.updateMany({ mobile }, { isCurrent: false });
 
     await Device.findOneAndUpdate(
-      { mobile }, // ✅ ONLY MOBILE
+      { mobile, deviceId }, // ✅ FIX
       {
         mobile,
         deviceName,
+        deviceId,
         isCurrent: true,
         lastActive: new Date(),
       },
-      // { upsert: true, new: true },
-      { upsert: true, returnDocument: "after" },
+      { upsert: true, new: true },
     );
-
-    console.log("DEVICE SAVED ✅");
 
     user.otp = null;
     user.otpExpiry = null;
