@@ -1,4 +1,3 @@
-
 // import 'bill_item_model.dart';
 
 // class BillModel {
@@ -27,12 +26,9 @@
 //   double get grandTotal => subTotal - discount + extraCharges;
 // }
 
-
-
 import 'bill_item_model.dart';
 
 class BillModel {
-
   String id;
   String billNo;
   DateTime date;
@@ -54,12 +50,10 @@ class BillModel {
   });
 
   /// SUB TOTAL
-  double get subTotal =>
-      items.fold(0, (sum, item) => sum + item.total);
+  double get subTotal => items.fold(0, (sum, item) => sum + item.total);
 
   /// GRAND TOTAL
-  double get grandTotal =>
-      subTotal - discount + extraCharges;
+  double get grandTotal => subTotal - discount + extraCharges;
 
   /// ================= TO JSON =================
 
@@ -72,7 +66,8 @@ class BillModel {
       "items": items.map((e) => e.toJson()).toList(),
       "discount": discount,
       "extraCharges": extraCharges,
-      "isPaid": isPaid,
+      // "isPaid": isPaid,
+      "paid": isPaid,
     };
   }
 
@@ -84,12 +79,11 @@ class BillModel {
       billNo: json["billNo"] ?? "",
       date: DateTime.parse(json["date"]),
       customerName: json["customerName"] ?? "",
-      items: (json["items"] as List)
-          .map((e) => BillItem.fromJson(e))
-          .toList(),
+      items: (json["items"] as List).map((e) => BillItem.fromJson(e)).toList(),
       discount: (json["discount"] ?? 0).toDouble(),
       extraCharges: (json["extraCharges"] ?? 0).toDouble(),
-      isPaid: json["isPaid"] ?? false,
+      // isPaid: json["isPaid"] ?? false,
+      isPaid: json["paid"] ?? false,
     );
   }
 }

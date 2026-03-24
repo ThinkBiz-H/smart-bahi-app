@@ -651,24 +651,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return b;
   }
 
-  // void openTransaction(bool isGiven) async {
-  //   final result = await Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (_) => AddTransactionScreen(
-  //         isGiven: isGiven,
-  //         customerName: widget.customerName,
-  //       ),
-  //     ),
-  //   );
-
-  //   if (result != null) {
-  //     Provider.of<CustomerProvider>(
-  //       context,
-  //       listen: false,
-  //     ).addTransaction(widget.customerName, result);
-  //   }
-  // }
   void openTransaction(bool isGiven) async {
     final result = await Navigator.push(
       context,

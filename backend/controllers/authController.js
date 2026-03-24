@@ -180,7 +180,15 @@ exports.sendOtp = async (req, res) => {
 
     user.otp = otp;
     user.otpExpiry = Date.now() + 5 * 60 * 1000;
-
+    if (!user.subscription) {
+      user.subscription = {
+        plan: "free",
+        isActive: true, // free bhi active hoga
+        startDate: new Date(),
+        endDate: new Date(new Date().setDate(new Date().getDate() + 7)), // 7 days free trial
+        dailyLimit: 2, // free limit
+      };
+    }
     await user.save();
 
     console.log("OTP:", otp);

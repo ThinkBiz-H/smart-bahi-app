@@ -883,7 +883,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
           }
         }
 
-        if (count >= 2) {
+        if (count >= 1) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(

@@ -6,11 +6,20 @@
 //       type: String,
 //       required: true,
 //       unique: true,
+//       trim: true,
 //     },
-//     otp: String,
-//     otpExpiry: Date,
+
+//     otp: {
+//       type: Number,
+//     },
+
+//     otpExpiry: {
+//       type: Date,
+//     },
 //   },
-//   { timestamps: true },
+//   {
+//     timestamps: true,
+//   },
 // );
 
 // module.exports = mongoose.model("User", userSchema);
@@ -32,6 +41,28 @@ const userSchema = new mongoose.Schema(
 
     otpExpiry: {
       type: Date,
+    },
+
+    // 🔥 SUBSCRIPTION ADD
+    subscription: {
+      plan: {
+        type: String,
+        default: "free",
+      },
+      startDate: {
+        type: Date,
+      },
+      endDate: {
+        type: Date,
+      },
+      isActive: {
+        type: Boolean,
+        default: false,
+      },
+      dailyLimit: {
+        type: Number,
+        default: 2, // free user ke liye
+      },
     },
   },
   {
