@@ -1,29 +1,3 @@
-// const mongoose = require("mongoose");
-
-// const userSchema = new mongoose.Schema(
-//   {
-//     mobile: {
-//       type: String,
-//       required: true,
-//       unique: true,
-//       trim: true,
-//     },
-
-//     otp: {
-//       type: Number,
-//     },
-
-//     otpExpiry: {
-//       type: Date,
-//     },
-//   },
-//   {
-//     timestamps: true,
-//   },
-// );
-
-// module.exports = mongoose.model("User", userSchema);
-
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -63,6 +37,18 @@ const userSchema = new mongoose.Schema(
         type: Number,
         default: 2, // free user ke liye
       },
+    },
+    subscription: {
+      plan: { type: String, default: "free" },
+      startDate: Date,
+      endDate: Date,
+      dailyLimit: { type: Number, default: 2 },
+    },
+
+    status: {
+      type: String,
+      enum: ["Active", "Blocked"],
+      default: "Active",
     },
   },
   {

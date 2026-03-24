@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -14,6 +13,7 @@ const profileRoutes = require("./routes/profileRoutes");
 const productRoutes = require("./routes/productRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 const deviceRoutes = require("./routes/deviceRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 require("./services/reminderService");
 // Load env
 dotenv.config();
@@ -47,6 +47,7 @@ app.use("/api/reminders", reminderRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/admin", adminRoutes);
 
 // ================= HEALTH CHECK =================
 
