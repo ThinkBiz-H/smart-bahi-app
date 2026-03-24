@@ -136,11 +136,11 @@ export default function UsersPage() {
                     </td>
                     <td className="px-5 py-3.5">
                       <span className="px-2 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary">
-                        {user.subscription?.planuser.plan}
+                        {user.subscription?.plan || "Free"}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground">
-                      {user.subscription?.endDate}
+                      {user.subscription?.endDate || "-"}
                     </td>
                     <td className="px-5 py-3.5">
                       <StatusBadge status={user.status} />

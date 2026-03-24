@@ -92,3 +92,27 @@ exports.getPayments = async (req, res) => {
     data: [],
   });
 };
+
+exports.getAnalytics = async (req, res) => {
+  try {
+    const data = {
+      userGrowth: [
+        { month: "Jan", users: 10 },
+        { month: "Feb", users: 25 },
+        { month: "Mar", users: 40 },
+      ],
+      dailyBills: [
+        { day: "Mon", bills: 5 },
+        { day: "Tue", bills: 8 },
+        { day: "Wed", bills: 6 },
+      ],
+    };
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+};
