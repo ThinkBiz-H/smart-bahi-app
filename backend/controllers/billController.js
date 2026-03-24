@@ -200,6 +200,13 @@ exports.addBill = async (req, res) => {
       ownerMobile,
     });
 
+    // 🔥 YAHI PE LAGAO 👇
+    console.log("==== DEBUG START ====");
+    console.log("OWNER:", ownerMobile);
+    console.log("PLAN:", user.subscription?.plan);
+    console.log("BILL COUNT:", billCount);
+    console.log("==== DEBUG END ====");
+
     // 🔥 SUBSCRIPTION LIMIT CHECK (🔥 MAIN PART)
     if (user.subscription?.plan === "free" && billCount >= 2) {
       return res.json({
