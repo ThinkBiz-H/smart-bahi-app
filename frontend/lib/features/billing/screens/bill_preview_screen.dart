@@ -14,8 +14,6 @@
 // import 'package:pdf/widgets.dart' as pw;
 // import 'package:printing/printing.dart';
 // import '../../stock/models/stock_item.dart';
-// import 'package:path_provider/path_provider.dart';
-// import 'package:permission_handler/permission_handler.dart';
 
 // class BillPreviewScreen extends StatefulWidget {
 //   final String? billKey;
@@ -154,130 +152,6 @@
 //       );
 //     } catch (e) {
 //       debugPrint("PDF error: $e");
-//     }
-//   }
-
-//   void _showActionSheet(bool isPdf) {
-//     showModalBottomSheet(
-//       context: context,
-//       builder: (_) {
-//         return SizedBox(
-//           height: 120,
-//           child: Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//             children: [
-//               /// DOWNLOAD
-//               GestureDetector(
-//                 onTap: () {
-//                   Navigator.pop(context);
-
-//                   if (isPdf) {
-//                     _downloadPdf();
-//                   } else {
-//                     _downloadImage();
-//                   }
-//                 },
-//                 child: Column(
-//                   mainAxisAlignment: MainAxisAlignment.center,
-//                   children: const [
-//                     CircleAvatar(radius: 28, child: Icon(Icons.download)),
-//                     SizedBox(height: 8),
-//                     Text("Download"),
-//                   ],
-//                 ),
-//               ),
-
-//               /// SHARE
-//               GestureDetector(
-//                 onTap: () {
-//                   Navigator.pop(context);
-
-//                   if (isPdf) {
-//                     shareBillPdf();
-//                   } else {
-//                     shareBillImage();
-//                   }
-//                 },
-//                 child: Column(
-//                   mainAxisAlignment: MainAxisAlignment.center,
-//                   children: const [
-//                     CircleAvatar(radius: 28, child: Icon(Icons.share)),
-//                     SizedBox(height: 8),
-//                     Text("Share"),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
-
-//   Future<void> requestStoragePermission() async {
-//     if (await Permission.storage.request().isGranted) {
-//       print("Storage permission granted");
-//     } else {
-//       print("Storage permission denied");
-//     }
-//   }
-
-//   /// IMAGE DOWNLOAD
-//   Future<void> _downloadImage() async {
-//     await requestStoragePermission(); // 🔥 CALL HERE
-
-//     final image = await screenshotController.capture();
-//     if (image == null) return;
-
-//     final directory = Directory('/storage/emulated/0/Download');
-
-//     final file = File(
-//       '${directory.path}/bill_${DateTime.now().millisecondsSinceEpoch}.png',
-//     );
-
-//     await file.writeAsBytes(image);
-
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       const SnackBar(content: Text("Image saved in Downloads 📁")),
-//     );
-//   }
-
-//   /// PDF DOWNLOAD
-//   Future<void> _downloadPdf() async {
-//     try {
-//       await requestStoragePermission();
-
-//       final image = await screenshotController.capture();
-//       if (image == null) {
-//         print("❌ Screenshot null");
-//         return;
-//       }
-
-//       final pdf = pw.Document();
-//       final img = pw.MemoryImage(image);
-
-//       pdf.addPage(pw.Page(build: (context) => pw.Image(img)));
-
-//       final directory = Directory('/storage/emulated/0/Download');
-
-//       if (!await directory.exists()) {
-//         await directory.create(recursive: true);
-//       }
-
-//       final filePath =
-//           '${directory.path}/bill_${DateTime.now().millisecondsSinceEpoch}.pdf';
-
-//       final file = File(filePath);
-
-//       await file.writeAsBytes(await pdf.save());
-
-//       print("✅ PDF saved at: $filePath");
-
-//       ScaffoldMessenger.of(
-//         context,
-//       ).showSnackBar(SnackBar(content: Text("PDF saved in Downloads 📁")));
-//     } catch (e) {
-//       print("❌ PDF ERROR: $e");
 //     }
 //   }
 
@@ -433,58 +307,19 @@
 //                   return Column(
 //                     mainAxisSize: MainAxisSize.min,
 //                     children: [
-//                       SizedBox(
-//                         height: 120,
-//                         child: Row(
-//                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                           children: [
-//                             /// IMAGE
-//                             GestureDetector(
-//                               onTap: () {
-//                                 Navigator.pop(context);
-//                                 _showActionSheet(false);
-//                               },
-//                               child: Column(
-//                                 mainAxisAlignment: MainAxisAlignment.center,
-//                                 children: [
-//                                   CircleAvatar(
-//                                     radius: 28,
-//                                     backgroundColor: Colors.green.shade100,
-//                                     child: const Icon(
-//                                       Icons.image,
-//                                       color: Colors.green,
-//                                     ),
-//                                   ),
-//                                   const SizedBox(height: 8),
-//                                   const Text("Image"),
-//                                 ],
-//                               ),
-//                             ),
-
-//                             /// PDF
-//                             GestureDetector(
-//                               onTap: () {
-//                                 Navigator.pop(context);
-//                                 _showActionSheet(true);
-//                               },
-//                               child: Column(
-//                                 mainAxisAlignment: MainAxisAlignment.center,
-//                                 children: [
-//                                   CircleAvatar(
-//                                     radius: 28,
-//                                     backgroundColor: Colors.red.shade100,
-//                                     child: const Icon(
-//                                       Icons.picture_as_pdf,
-//                                       color: Colors.red,
-//                                     ),
-//                                   ),
-//                                   const SizedBox(height: 8),
-//                                   const Text("PDF"),
-//                                 ],
-//                               ),
-//                             ),
-//                           ],
-//                         ),
+//                       ListTile(
+//                         title: const Text("Share as Image"),
+//                         onTap: () {
+//                           Navigator.pop(context);
+//                           shareBillImage();
+//                         },
+//                       ),
+//                       ListTile(
+//                         title: const Text("Share as PDF"),
+//                         onTap: () {
+//                           Navigator.pop(context);
+//                           shareBillPdf();
+//                         },
 //                       ),
 //                     ],
 //                   );
@@ -630,19 +465,20 @@
 //                       const Divider(),
 //                       row("TOTAL", widget.grandTotal, bold: true),
 
-//                       Padding(
-//                         padding: const EdgeInsets.only(top: 8),
-//                         child: Center(
-//                           child: Text(
-//                             savedPaid ? "PAID" : "UNPAID",
-//                             style: TextStyle(
-//                               color: savedPaid ? Colors.green : Colors.red,
-//                               fontSize: 18,
-//                               fontWeight: FontWeight.bold,
+//                       if (savedPaid)
+//                         const Padding(
+//                           padding: EdgeInsets.only(top: 8),
+//                           child: Center(
+//                             child: Text(
+//                               "PAID",
+//                               style: TextStyle(
+//                                 color: Colors.green,
+//                                 fontSize: 18,
+//                                 fontWeight: FontWeight.bold,
+//                               ),
 //                             ),
 //                           ),
 //                         ),
-//                       ),
 //                     ],
 //                   ),
 //                 ),
@@ -1029,13 +865,48 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
     try {
       final provider = context.read<CustomerProvider>();
       final box = Hive.box('bills');
-      final settings = Hive.box('settings');
+      final settingsBox = Hive.box('settings');
 
+      bool isPremium = settingsBox.get('isPremium') ?? false;
+
+      if (!isPremium) {
+        final today = DateTime.now();
+        int count = 0;
+
+        for (var t in box.values) {
+          final date = DateTime.parse(t['date']);
+
+          if (date.year == today.year &&
+              date.month == today.month &&
+              date.day == today.day) {
+            count++;
+          }
+        }
+
+        if (count >= 2) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                "Daily limit reached. Upgrade to continue 🚀   Bill not saved",
+              ),
+            ),
+          );
+
+          Future.delayed(const Duration(milliseconds: 300), () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => PlanScreen()),
+            );
+          });
+
+          return;
+        }
+      }
+      final settings = Hive.box('settings');
       final ownerMobile = settings.get('mobile');
 
       if (ownerMobile == null) return;
 
-      /// ✅ PEHLE billData banao
       final billData = {
         "ownerMobile": ownerMobile,
         "customerName": widget.customerName,
@@ -1053,33 +924,53 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
         "paid": isPaid,
       };
 
-      /// ✅ AB use karo
-      final res = await ApiService.addBill(billData);
-
-      if (res["success"] == true) {
-        await box.add({...billData, "date": DateTime.now().toIso8601String()});
-      } else if (res["isLimitReached"] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Free limit reached. Upgrade to continue 🚀"),
-          ),
-        );
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => PlanScreen()),
-        );
-
-        return;
+      // if (widget.billKey != null) {
+      //   await ApiService.updateBill(widget.billKey!, billData);
+      // } else {
+      //   await ApiService.addBill(billData);
+      // }
+      if (widget.billKey != null) {
+        await ApiService.updateBill(widget.billKey!, billData);
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(res["message"] ?? "Error")));
-        return;
+        await ApiService.addBill(billData);
+
+        /// 🔥 MAIN FIX
+        await box.add({...billData, "date": DateTime.now().toIso8601String()});
+      }
+
+      if (widget.billKey != null) {
+        bool oldPaid = widget.existingBill?['paid'] ?? false;
+        bool newPaid = isPaid;
+
+        if (!oldPaid && newPaid) {
+          await provider.addTransaction(widget.customerName, {
+            'amount': widget.grandTotal,
+            'note': 'Bill ${widget.billNumber} Paid',
+            'date': DateTime.now(),
+            'type': 'RECEIVED',
+          });
+        } else if (oldPaid && !newPaid) {
+          await provider.addTransaction(widget.customerName, {
+            'amount': widget.grandTotal,
+            'note': 'Bill ${widget.billNumber}',
+            'date': DateTime.now(),
+            'type': 'GIVEN',
+          });
+        }
+      } else {
+        if (!isPaid) {
+          await provider.addTransaction(widget.customerName, {
+            'amount': widget.grandTotal,
+            'note': 'Bill ${widget.billNumber}',
+            'date': DateTime.now(),
+            'type': 'GIVEN',
+          });
+        }
       }
     } catch (e) {
       debugPrint("Error: $e");
     }
+    savedPaid = isPaid;
   }
 
   /// ================= POPUP =================

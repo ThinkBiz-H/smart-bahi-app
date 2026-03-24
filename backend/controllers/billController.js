@@ -1,6 +1,6 @@
 // const Bill = require("../models/Bill");
 // const Product = require("../models/Product");
-// const Customer = require("../models/Customer");
+
 // /// ================= ADD BILL =================
 // exports.addBill = async (req, res) => {
 //   try {
@@ -92,57 +92,15 @@
 //   try {
 //     const id = req.params.id;
 
-//     /// 🔥 OLD BILL
-//     const oldBill = await Bill.findById(id);
-
-//     if (!oldBill) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Bill not found",
-//       });
-//     }
-
-//     /// 🔥 UPDATE BILL
-//     const updatedBill = await Bill.findByIdAndUpdate(id, req.body, {
+//     const bill = await Bill.findByIdAndUpdate(id, req.body, {
 //       new: true,
 //     });
 
-//     /// =====================================
-//     /// 🔥 CUSTOMER BALANCE LOGIC
-//     /// =====================================
-
-//     const customer = await Customer.findOne({
-//       mobile: oldBill.mobile,
-//       name: oldBill.customerName,
-//     });
-
-//     if (customer) {
-//       /// ❌ unpaid → paid
-//       if (!oldBill.paid && updatedBill.paid) {
-//         customer.balance -= oldBill.grandTotal;
-
-//         console.log(`💰 PAID: ${customer.name} balance → ${customer.balance}`);
-//       }
-
-//       /// ❌ paid → unpaid (reverse case)
-//       if (oldBill.paid && !updatedBill.paid) {
-//         customer.balance += oldBill.grandTotal;
-
-//         console.log(
-//           `⚠️ UNPAID AGAIN: ${customer.name} balance → ${customer.balance}`,
-//         );
-//       }
-
-//       await customer.save();
-//     }
-
 //     res.json({
 //       success: true,
-//       data: updatedBill,
+//       data: bill,
 //     });
 //   } catch (error) {
-//     console.log("❌ UPDATE BILL ERROR:", error);
-
 //     res.status(500).json({
 //       success: false,
 //       message: error.message,
@@ -171,66 +129,24 @@
 const Bill = require("../models/Bill");
 const Product = require("../models/Product");
 const Customer = require("../models/Customer");
-const User = require("../models/User"); // 🔥 ADD THIS
-
 /// ================= ADD BILL =================
 exports.addBill = async (req, res) => {
   try {
     const { items, ownerMobile } = req.body;
 
-    if (!ownerMobile) {
-      return res.json({
-        success: false,
-        message: "Mobile required",
-      });
-    }
-
-    // 🔥 USER FIND
-    const user = await User.findOne({ mobile: ownerMobile });
-
-    if (!user) {
-      return res.json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // 🔥 BILL COUNT
-    const billCount = await Bill.countDocuments({
-      ownerMobile,
-    });
-
-    // 🔥 YAHI PE LAGAO 👇
-    console.log("==== DEBUG START ====");
-    console.log("OWNER:", ownerMobile);
-    console.log("PLAN:", user.subscription?.plan);
-    console.log("BILL COUNT:", billCount);
-    console.log("==== DEBUG END ====");
-
-    // 🔥 SUBSCRIPTION LIMIT CHECK (🔥 MAIN PART)
-    if (user.subscription?.plan === "free" && billCount >= 2) {
-      return res.json({
-        success: false,
-        isLimitReached: true,
-        message: "Free limit reached",
-      });
-    }
-
-    // ===============================
-    // ✅ BILL SAVE (AB SAFE HAI)
-    // ===============================
     const bill = new Bill(req.body);
     await bill.save();
 
     // ===============================
-    // 🔥 STOCK REDUCE (TERA SAME CODE)
+    // 🔥 STOCK REDUCE (FULL FIX)
     // ===============================
+
     if (items && items.length > 0) {
       for (const item of items) {
         console.log("🧾 ITEM:", item);
 
         const product = await Product.findOne({
-          name: item.name,
+          name: item.name, // ✅ productCode hata diya (issue wahi tha)
           mobile: ownerMobile,
         });
 
@@ -246,6 +162,7 @@ exports.addBill = async (req, res) => {
           continue;
         }
 
+        // ❌ STOCK CHECK
         if (product.qty < sellQty) {
           return res.status(400).json({
             success: false,
@@ -253,7 +170,9 @@ exports.addBill = async (req, res) => {
           });
         }
 
+        // ✅ UPDATE STOCK
         product.qty = product.qty - sellQty;
+
         await product.save();
 
         console.log(`✅ STOCK UPDATED: ${product.name} → ${product.qty}`);
@@ -301,15 +220,57 @@ exports.updateBill = async (req, res) => {
   try {
     const id = req.params.id;
 
+    /// 🔥 OLD BILL
+    const oldBill = await Bill.findById(id);
+
+    if (!oldBill) {
+      return res.status(404).json({
+        success: false,
+        message: "Bill not found",
+      });
+    }
+
+    /// 🔥 UPDATE BILL
     const updatedBill = await Bill.findByIdAndUpdate(id, req.body, {
       new: true,
     });
+
+    /// =====================================
+    /// 🔥 CUSTOMER BALANCE LOGIC
+    /// =====================================
+
+    const customer = await Customer.findOne({
+      mobile: oldBill.mobile,
+      name: oldBill.customerName,
+    });
+
+    if (customer) {
+      /// ❌ unpaid → paid
+      if (!oldBill.paid && updatedBill.paid) {
+        customer.balance -= oldBill.grandTotal;
+
+        console.log(`💰 PAID: ${customer.name} balance → ${customer.balance}`);
+      }
+
+      /// ❌ paid → unpaid (reverse case)
+      if (oldBill.paid && !updatedBill.paid) {
+        customer.balance += oldBill.grandTotal;
+
+        console.log(
+          `⚠️ UNPAID AGAIN: ${customer.name} balance → ${customer.balance}`,
+        );
+      }
+
+      await customer.save();
+    }
 
     res.json({
       success: true,
       data: updatedBill,
     });
   } catch (error) {
+    console.log("❌ UPDATE BILL ERROR:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
