@@ -95,24 +95,78 @@ exports.getPayments = async (req, res) => {
 
 exports.getAnalytics = async (req, res) => {
   try {
-    const data = {
-      userGrowth: [
-        { month: "Jan", users: 10 },
-        { month: "Feb", users: 25 },
-        { month: "Mar", users: 40 },
-      ],
-      dailyBills: [
-        { day: "Mon", bills: 5 },
-        { day: "Tue", bills: 8 },
-        { day: "Wed", bills: 6 },
-      ],
-    };
+    const User = require("../models/User");
+    const Bill = require("../models/Bill");
 
+    /// ================= USER GROWTH (MONTH WISE) =================
+    const users = await User.aggregate([
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          users: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const userGrowth = users.map((u) => ({
+      month: months[u._id - 1],
+      users: u.users,
+    }));
+
+    /// ================= DAILY BILLS (LAST 7 DAYS) =================
+    const last7Days = await Bill.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" },
+          bills: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const daysMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    const dailyBills = last7Days.map((d) => ({
+      day: daysMap[d._id - 1],
+      bills: d.bills,
+    }));
+
+    /// ================= RESPONSE =================
     res.json({
       success: true,
-      data,
+      data: {
+        userGrowth,
+        dailyBills,
+      },
     });
   } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
+    console.log("Analytics Error:", e);
+    res.status(500).json({
+      success: false,
+      message: e.message,
+    });
   }
 };
