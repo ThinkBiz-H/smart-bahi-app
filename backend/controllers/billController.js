@@ -174,6 +174,127 @@ const Customer = require("../models/Customer");
 const User = require("../models/User"); // 🔥 ADD
 
 /// ================= ADD BILL =================
+// exports.addBill = async (req, res) => {
+//   try {
+//     const { items, ownerMobile } = req.body;
+
+//     if (!ownerMobile) {
+//       return res.json({
+//         success: false,
+//         message: "Mobile required",
+//       });
+//     }
+
+//     // 🔥 USER FIND
+//     const user = await User.findOne({ mobile: ownerMobile });
+
+//     if (!user) {
+//       return res.json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     // ===============================
+//     // 🔥 SUBSCRIPTION CHECK START
+//     // ===============================
+
+//     const subscription = user.subscription;
+
+//     // ❌ No plan active
+//     if (!subscription?.isActive) {
+//       return res.json({
+//         success: false,
+//         isLimitReached: true,
+//         message: "Please buy a plan",
+//       });
+//     }
+
+//     // ❌ Expired
+//     if (new Date(subscription.endDate) < new Date()) {
+//       return res.json({
+//         success: false,
+//         isLimitReached: true,
+//         message: "Plan expired",
+//       });
+//     }
+
+//     // 🔥 DAILY LIMIT CHECK
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+
+//     const tomorrow = new Date(today);
+//     tomorrow.setDate(today.getDate() + 1);
+
+//     const todayCount = await Bill.countDocuments({
+//       ownerMobile,
+//       createdAt: {
+//         $gte: today,
+//         $lt: tomorrow,
+//       },
+//     });
+
+//     // ❌ limit hit
+//     if (
+//       subscription.dailyLimit !== -1 &&
+//       todayCount >= subscription.dailyLimit
+//     ) {
+//       return res.json({
+//         success: false,
+//         isLimitReached: true,
+//         message: "Daily limit reached",
+//       });
+//     }
+
+//     // ===============================
+//     // ✅ BILL SAVE
+//     // ===============================
+//     const bill = new Bill(req.body);
+//     await bill.save();
+
+//     // ===============================
+//     // 🔥 STOCK REDUCE
+//     // ===============================
+//     if (items && items.length > 0) {
+//       for (const item of items) {
+//         const product = await Product.findOne({
+//           name: item.name,
+//           mobile: ownerMobile,
+//         });
+
+//         if (!product) continue;
+
+//         const sellQty = Number(item.qty || item.quantity || 0);
+
+//         if (!sellQty || sellQty <= 0) continue;
+
+//         if (product.qty < sellQty) {
+//           return res.status(400).json({
+//             success: false,
+//             message: `Not enough stock for ${product.name}`,
+//           });
+//         }
+
+//         product.qty = product.qty - sellQty;
+//         await product.save();
+//       }
+//     }
+
+//     res.json({
+//       success: true,
+//       message: "Bill created & stock updated",
+//       data: bill,
+//     });
+//   } catch (error) {
+//     console.log("❌ BILL ERROR:", error);
+
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
 exports.addBill = async (req, res) => {
   try {
     const { items, ownerMobile } = req.body;
@@ -185,7 +306,7 @@ exports.addBill = async (req, res) => {
       });
     }
 
-    // 🔥 USER FIND
+    // ✅ USER CHECK (optional rakh sakta hai)
     const user = await User.findOne({ mobile: ownerMobile });
 
     if (!user) {
@@ -196,58 +317,7 @@ exports.addBill = async (req, res) => {
     }
 
     // ===============================
-    // 🔥 SUBSCRIPTION CHECK START
-    // ===============================
-
-    const subscription = user.subscription;
-
-    // ❌ No plan active
-    if (!subscription?.isActive) {
-      return res.json({
-        success: false,
-        isLimitReached: true,
-        message: "Please buy a plan",
-      });
-    }
-
-    // ❌ Expired
-    if (new Date(subscription.endDate) < new Date()) {
-      return res.json({
-        success: false,
-        isLimitReached: true,
-        message: "Plan expired",
-      });
-    }
-
-    // 🔥 DAILY LIMIT CHECK
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    const todayCount = await Bill.countDocuments({
-      ownerMobile,
-      createdAt: {
-        $gte: today,
-        $lt: tomorrow,
-      },
-    });
-
-    // ❌ limit hit
-    if (
-      subscription.dailyLimit !== -1 &&
-      todayCount >= subscription.dailyLimit
-    ) {
-      return res.json({
-        success: false,
-        isLimitReached: true,
-        message: "Daily limit reached",
-      });
-    }
-
-    // ===============================
-    // ✅ BILL SAVE
+    // ✅ DIRECT BILL SAVE (NO LIMIT 🚀)
     // ===============================
     const bill = new Bill(req.body);
     await bill.save();
@@ -294,7 +364,6 @@ exports.addBill = async (req, res) => {
     });
   }
 };
-
 /// ================= GET BILLS =================
 exports.getBills = async (req, res) => {
   try {

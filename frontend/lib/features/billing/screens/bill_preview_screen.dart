@@ -1574,7 +1574,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
       final image = await screenshotController.capture();
       if (image == null) {
         print("❌ Screenshot null");
-        return ;
+        return;
       }
 
       final pdf = pw.Document();
@@ -1665,6 +1665,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
 
       print("BILL RESPONSE: $res");
 
+      /// ✅ SUCCESS
       if (res["success"] == true) {
         await box.add({...billData, "date": DateTime.now().toIso8601String()});
 
@@ -1679,22 +1680,33 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
 
         savedPaid = isPaid;
         return true;
-      } else if (res["isLimitReached"] == true) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Plan required 🚀")));
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const PlanScreen()),
+      }
+      /// 🔥 LIMIT REACHED (NO PLAN SCREEN)
+      else if (res["isLimitReached"] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Limit reached, saving locally ✅")),
         );
 
-        return false;
-      } else {
+        // ✅ LOCAL SAVE (important)
+        await box.add({...billData, "date": DateTime.now().toIso8601String()});
+
+        if (!isPaid) {
+          await provider.addTransaction(widget.customerName, {
+            'amount': widget.grandTotal,
+            'note': 'Bill ${widget.billNumber}',
+            'date': DateTime.now(),
+            'type': 'GIVEN',
+          });
+        }
+
+        savedPaid = isPaid;
+        return true; // ✅ SUCCESS RETURN (no redirect)
+      }
+      /// ❌ OTHER ERROR
+      else {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(res["message"] ?? "Error")));
-
         return false;
       }
     } catch (e) {
