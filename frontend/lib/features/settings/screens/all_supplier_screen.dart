@@ -120,9 +120,9 @@ class _AllSupplierScreenState extends State<AllSupplierScreen>
         title: const Text("Suppliers"),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: "All Suppliers"),
-            Tab(text: "Hidden"),
+          tabs: [
+            Tab(text: "All Suppliers (${visibleSuppliers.length})"),
+            Tab(text: "Hidden (${hiddenSuppliers.length})"),
           ],
         ),
       ),

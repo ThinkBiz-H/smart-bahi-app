@@ -1340,10 +1340,13 @@ import 'package:printing/printing.dart';
 import '../../stock/models/stock_item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'bills_history_screen.dart';
 
 class BillPreviewScreen extends StatefulWidget {
   final String? billKey;
   final Map<String, dynamic>? existingBill;
+
+  final bool isViewOnly;
 
   final List<Map<String, dynamic>> items;
   final String customerName;
@@ -1359,6 +1362,23 @@ class BillPreviewScreen extends StatefulWidget {
   final double cessTotal;
   final double grandTotal;
 
+  // const BillPreviewScreen({
+  //   super.key,
+  //   required this.billKey,
+  //   this.existingBill,
+  //   required this.items,
+  //   required this.customerName,
+  //   required this.mobile,
+  //   required this.address,
+  //   required this.billNumber,
+  //   required this.billDate,
+  //   required this.subTotal,
+  //   required this.charges,
+  //   required this.discount,
+  //   required this.gstTotal,
+  //   required this.cessTotal,
+  //   required this.grandTotal,
+  // });
   const BillPreviewScreen({
     super.key,
     required this.billKey,
@@ -1375,6 +1395,7 @@ class BillPreviewScreen extends StatefulWidget {
     required this.gstTotal,
     required this.cessTotal,
     required this.grandTotal,
+    this.isViewOnly = false, // ✅ ADD THIS
   });
 
   @override
@@ -1733,327 +1754,371 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade200,
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const BillsHistoryScreen()),
+          (route) => false,
+        );
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade200,
 
-      // 🔥 SHARE BUTTON ADD
-      appBar: AppBar(
-        title: Text(widget.billNumber),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
+        appBar: AppBar(
+          title: Text(widget.billNumber),
+
+          /// 🔥 BACK BUTTON FIX
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (_) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        height: 120,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            /// IMAGE
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showActionSheet(false);
-                              },
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircleAvatar(
-                                    radius: 28,
-                                    backgroundColor: Colors.green.shade100,
-                                    child: const Icon(
-                                      Icons.image,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Text("Image"),
-                                ],
-                              ),
-                            ),
-
-                            /// PDF
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showActionSheet(true);
-                              },
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircleAvatar(
-                                    radius: 28,
-                                    backgroundColor: Colors.red.shade100,
-                                    child: const Icon(
-                                      Icons.picture_as_pdf,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Text("PDF"),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const BillsHistoryScreen()),
+                (route) => false,
               );
             },
           ),
-        ],
-      ),
 
-      body: Column(
-        children: [
-          Expanded(
-            child: Screenshot(
-              controller: screenshotController,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(12),
-                child: Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (_) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          height: 120,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _showActionSheet(false);
+                                },
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 28,
+                                      backgroundColor: Colors.green.shade100,
+                                      child: const Icon(
+                                        Icons.image,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text("Image"),
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _showActionSheet(true);
+                                },
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 28,
+                                      backgroundColor: Colors.red.shade100,
+                                      child: const Icon(
+                                        Icons.picture_as_pdf,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text("PDF"),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
 
-                    children: [
-                      Center(
-                        child: Column(
+        body: Column(
+          children: [
+            Expanded(
+              child: Screenshot(
+                controller: screenshotController,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(12),
+                  child: Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                widget.customerName,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text("Mobile: ${widget.mobile}"),
+                              Text(widget.address),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            Text("Bill No: ${widget.billNumber}"),
                             Text(
-                              widget.customerName,
-                              style: const TextStyle(
-                                fontSize: 20,
+                              "${widget.billDate.day}/${widget.billDate.month}/${widget.billDate.year}",
+                            ),
+                          ],
+                        ),
+
+                        const Divider(),
+
+                        /// 🔥 NEW TABLE HEADER
+                        Row(
+                          children: const [
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                "Item",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                "Qty",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                "Rate",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                "Amount",
+                                textAlign: TextAlign.end,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const Divider(),
+
+                        /// 🔥 ITEMS LIST FIXED
+                        ...widget.items.map((item) {
+                          final qty = (item['qty'] ?? 0);
+                          final rate = (item['rate'] ?? 0);
+
+                          /// 🔥 FIX: amount calculate (no more null)
+                          final amount = qty * rate;
+
+                          return Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: Text(item['name'] ?? ""),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Text(
+                                      "$qty",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      "₹$rate",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      "₹$amount",
+                                      textAlign: TextAlign.end,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Divider(),
+                            ],
+                          );
+                        }).toList(),
+
+                        row("Sub Total", widget.subTotal),
+                        row("Extra Charge", widget.charges),
+                        row("Discount", -widget.discount),
+                        row("GST", widget.gstTotal),
+                        row("Cess", widget.cessTotal),
+
+                        const Divider(),
+                        row("TOTAL", widget.grandTotal, bold: true),
+
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Center(
+                            child: Text(
+                              savedPaid ? "PAID" : "UNPAID",
+                              style: TextStyle(
+                                color: savedPaid ? Colors.green : Colors.red,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text("Mobile: ${widget.mobile}"),
-                            Text(widget.address),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Bill No: ${widget.billNumber}"),
-                          Text(
-                            "${widget.billDate.day}/${widget.billDate.month}/${widget.billDate.year}",
-                          ),
-                        ],
-                      ),
-
-                      const Divider(),
-
-                      /// 🔥 NEW TABLE HEADER
-                      Row(
-                        children: const [
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              "Item",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Text(
-                              "Qty",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              "Rate",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              "Amount",
-                              textAlign: TextAlign.end,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const Divider(),
-
-                      /// 🔥 ITEMS LIST FIXED
-                      ...widget.items.map((item) {
-                        final qty = (item['qty'] ?? 0);
-                        final rate = (item['rate'] ?? 0);
-
-                        /// 🔥 FIX: amount calculate (no more null)
-                        final amount = qty * rate;
-
-                        return Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 3,
-                                  child: Text(item['name'] ?? ""),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Text(
-                                    "$qty",
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    "₹$rate",
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    "₹$amount",
-                                    textAlign: TextAlign.end,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Divider(),
-                          ],
-                        );
-                      }).toList(),
-
-                      row("Sub Total", widget.subTotal),
-                      row("Extra Charge", widget.charges),
-                      row("Discount", -widget.discount),
-                      row("GST", widget.gstTotal),
-                      row("Cess", widget.cessTotal),
-
-                      const Divider(),
-                      row("TOTAL", widget.grandTotal, bold: true),
-
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Center(
-                          child: Text(
-                            savedPaid ? "PAID" : "UNPAID",
-                            style: TextStyle(
-                              color: savedPaid ? Colors.green : Colors.red,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          if (!savedPaid)
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  /// 🔥 SELECT TEMPLATE BUTTON
-                  GestureDetector(
-                    onTap: () async {
-                      final selectedTemplate = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              SelectTemplateScreen(), // 👈 yaha apna template screen dal
-                        ),
-                      );
-
-                      if (selectedTemplate != null) {
-                        setState(() {
-                          // yaha template store kar sakta hai
-                        });
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.green),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text(
-                            "Select Template",
-                            style: TextStyle(fontWeight: FontWeight.w600),
+            if (!widget.isViewOnly && !savedPaid)
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    /// 🔥 SELECT TEMPLATE BUTTON
+                    GestureDetector(
+                      onTap: () async {
+                        final selectedTemplate = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                SelectTemplateScreen(), // 👈 yaha apna template screen dal
                           ),
-                          Icon(Icons.arrow_forward_ios, size: 16),
-                        ],
+                        );
+
+                        if (selectedTemplate != null) {
+                          setState(() {
+                            // yaha template store kar sakta hai
+                          });
+                        }
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.green),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: const [
+                            Text(
+                              "Select Template",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            Icon(Icons.arrow_forward_ios, size: 16),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  /// 🔥 PAYMENT STATUS
-                  Row(
-                    children: [
-                      const Text("Payment status"),
-                      const Spacer(),
-                      Radio(
-                        value: true,
-                        groupValue: isPaid,
-                        onChanged: (_) => setState(() => isPaid = true),
-                      ),
-                      const Text("Paid"),
-                      Radio(
-                        value: false,
-                        groupValue: isPaid,
-                        onChanged: (_) => setState(() => isPaid = false),
-                      ),
-                      const Text("Unpaid"),
-                    ],
-                  ),
-
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0C2752),
-                      minimumSize: const Size(double.infinity, 50),
+                    /// 🔥 PAYMENT STATUS
+                    Row(
+                      children: [
+                        const Text("Payment status"),
+                        const Spacer(),
+                        Radio(
+                          value: true,
+                          groupValue: isPaid,
+                          onChanged: (_) => setState(() => isPaid = true),
+                        ),
+                        const Text("Paid"),
+                        Radio(
+                          value: false,
+                          groupValue: isPaid,
+                          onChanged: (_) => setState(() => isPaid = false),
+                        ),
+                        const Text("Unpaid"),
+                      ],
                     ),
-                    onPressed: () async {
-                      print("🔥 SAVE CLICKED");
 
-                      await updateInventory(widget.items);
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0C2752),
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      onPressed: () async {
+                        print("🔥 SAVE CLICKED");
 
-                      print("🔥 STOCK UPDATED");
+                        await updateInventory(widget.items);
 
-                      bool success = await saveBillWithoutNavigation();
+                        print("🔥 STOCK UPDATED");
 
-                      if (success) {
-                        Navigator.pop(context, true); // ✅ only if success
-                      }
-                    },
-                    child: const Text("Save Bill"),
-                  ),
-                ],
+                        bool success = await saveBillWithoutNavigation();
+
+                        // if (success) {
+                        //   Navigator.pop(context, true); // ✅ only if success
+                        // }
+                        if (success) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BillPreviewScreen(
+                                billKey: widget.billKey,
+                                existingBill: widget.existingBill,
+                                customerName: widget.customerName,
+                                mobile: widget.mobile,
+                                address: widget.address,
+                                billNumber: widget.billNumber,
+                                billDate: widget.billDate,
+                                items: widget.items,
+                                subTotal: widget.subTotal,
+                                gstTotal: widget.gstTotal,
+                                cessTotal: widget.cessTotal,
+                                charges: widget.charges,
+                                discount: widget.discount,
+                                grandTotal: widget.grandTotal,
+
+                                isViewOnly: true, // 🔥 MOST IMPORTANT
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text("Save Bill"),
+                    ),
+                  ],
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
