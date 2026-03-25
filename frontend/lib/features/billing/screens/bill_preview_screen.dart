@@ -1684,23 +1684,18 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
       /// 🔥 LIMIT REACHED (NO PLAN SCREEN)
       else if (res["isLimitReached"] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Limit reached, saving locally ✅")),
+          const SnackBar(
+            content: Text("Daily limit reached 🚫 Upgrade your plan"),
+          ),
         );
 
-        // ✅ LOCAL SAVE (important)
-        await box.add({...billData, "date": DateTime.now().toIso8601String()});
+        // 🚀 PLAN SCREEN OPEN
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PlanScreen()),
+        );
 
-        if (!isPaid) {
-          await provider.addTransaction(widget.customerName, {
-            'amount': widget.grandTotal,
-            'note': 'Bill ${widget.billNumber}',
-            'date': DateTime.now(),
-            'type': 'GIVEN',
-          });
-        }
-
-        savedPaid = isPaid;
-        return true; // ✅ SUCCESS RETURN (no redirect)
+        return false; // ❌ bill save nahi hoga
       }
       /// ❌ OTHER ERROR
       else {

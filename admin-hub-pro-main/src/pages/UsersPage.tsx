@@ -52,7 +52,13 @@ export default function UsersPage() {
     const matchSearch =
       u.mobile.includes(search) ||
       u.name.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = filter === "all" || u.status.toLowerCase() === filter;
+    const matchFilter =
+      filter === "all" ||
+      (filter === "active" && u.status === "Active") ||
+      (filter === "blocked" && u.status === "Blocked") ||
+      (filter === "expired" &&
+        u.subscription?.endDate &&
+        new Date(u.subscription.endDate) < new Date());
     return matchSearch && matchFilter;
   });
 
@@ -129,7 +135,7 @@ export default function UsersPage() {
                     className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                   >
                     <td className="px-5 py-3.5 font-medium text-foreground">
-                      {user.name}
+                      {user.name || user.mobile}
                     </td>
                     <td className="px-5 py-3.5 font-mono text-muted-foreground">
                       {user.mobile}
@@ -140,7 +146,11 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground">
-                      {user.subscription?.endDate || "-"}
+                      {user.subscription?.endDate
+                        ? new Date(
+                            user.subscription.endDate,
+                          ).toLocaleDateString()
+                        : "-"}
                     </td>
                     <td className="px-5 py-3.5">
                       <StatusBadge status={user.status} />

@@ -269,32 +269,42 @@ class _PlanScreenState extends State<PlanScreen> {
           final mobile = settings.get('mobile');
 
           int days = 30;
-          int dailyLimit = -1;
-          String planName = "pro";
+          int dailyLimit = 5;
+          String plan = "free";
 
+          // 🔥 PLAN LOGIC (FINAL)
           if (selectedPlan == 0) {
-            planName = "adsfree";
+            plan = "Basic";
+            dailyLimit = 50;
           } else if (selectedPlan == 1) {
-            planName = "basic";
+            plan = "Pro";
+            dailyLimit = 200;
           } else if (selectedPlan == 2) {
-            planName = "premium";
+            plan = "Premium";
+            dailyLimit = -1; // unlimited
           }
 
-          // 🔥 BACKEND CALL
+          // 🔥 BACKEND CALL (FIXED PARAMS)
           final res = await ApiService.activatePlan({
             "mobile": mobile,
-            "days": days,
+            "plan": plan, // ✅ correct key
             "dailyLimit": dailyLimit,
-            "planName": planName,
+            "days": days,
           });
 
           print("PLAN RESPONSE: $res");
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Plan activated successfully 🚀")),
-          );
+          if (res["success"] == true) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("$plan Plan Activated 🚀")));
 
-          Navigator.pop(context);
+            Navigator.pop(context); // 🔥 back
+          } else {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(res["message"] ?? "Error")));
+          }
         },
       );
     });

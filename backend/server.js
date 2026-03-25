@@ -47,7 +47,7 @@ app.use("/api/reminders", reminderRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
-app.use("/admin", adminRoutes);
+app.use("/api/admin", adminRoutes);
 
 // ================= HEALTH CHECK =================
 

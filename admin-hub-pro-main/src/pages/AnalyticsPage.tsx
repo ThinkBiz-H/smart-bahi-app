@@ -17,7 +17,7 @@ import {
 } from "recharts";
 
 export default function AnalyticsPage() {
-  const [data, setData] = useState <any> (null);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,9 +46,9 @@ export default function AnalyticsPage() {
     );
   }
 
-  const revenueData = data.dailyBills.map((d) => ({
+  const revenueData = (data.dailyBills || []).map((d) => ({
     ...d,
-    revenue: d.bills * 165,
+    revenue: d.revenue || d.bills * 165,
   }));
 
   return (
@@ -59,7 +59,7 @@ export default function AnalyticsPage() {
             Daily New Users
           </h3>
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data.userGrowth}>
+            <LineChart data={data.userGrowth || []}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="hsl(var(--border))"
@@ -95,7 +95,7 @@ export default function AnalyticsPage() {
             Bills Per Day
           </h3>
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={data.dailyBills}>
+            <BarChart data={data.dailyBills || []}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="hsl(var(--border))"

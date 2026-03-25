@@ -264,6 +264,7 @@ class ApiService {
   static const String baseUrl =
       "https://captivating-achievement-production-7fbd.up.railway.app/api";
 
+  // static const String baseUrl = "http://192.168.1.4:5000/api";
   static const headers = {"Content-Type": "application/json"};
 
   /// ================= OTP =================
@@ -356,9 +357,38 @@ class ApiService {
 
   /// ================= PRODUCTS =================
 
-  static Future getProducts(String mobile) async {
-    final res = await http.get(Uri.parse("$baseUrl/products/$mobile"));
-    return jsonDecode(res.body);
+  // static Future getProducts(String mobile) async {
+  //   final res = await http.get(Uri.parse("$baseUrl/products/$mobile"));
+  //   return jsonDecode(res.body);
+  // }
+  static Future<List<dynamic>> getProducts(String mobile) async {
+    try {
+      final res = await http.get(Uri.parse("$baseUrl/products/$mobile"));
+
+      if (res.statusCode != 200) {
+        print("API ERROR: ${res.statusCode}");
+        return [];
+      }
+
+      final data = jsonDecode(res.body);
+
+      print("PARSED DATA: $data");
+
+      /// 🔥 CASE 1: direct list
+      if (data is List) {
+        return data;
+      }
+
+      /// 🔥 CASE 2: wrapped response
+      if (data is Map && data["success"] == true) {
+        return data["data"];
+      }
+
+      return [];
+    } catch (e) {
+      print("API ERROR: $e");
+      return [];
+    }
   }
 
   static Future addProduct(Map data) async {

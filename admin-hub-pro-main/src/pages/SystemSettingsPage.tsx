@@ -18,7 +18,7 @@ export default function SystemSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await API.get("/settings");
+        const res = await API.get("/admin/settings");
         setSettings(res.data.data);
       } catch (e) {
         console.log("Error fetching settings", e);
@@ -43,7 +43,7 @@ export default function SystemSettingsPage() {
     }
     setSaving(true);
     try {
-      await API.post("/settings/update", settings);
+      await API.post("/admin/settings/update", settings);
       toast({ title: "Settings saved successfully" });
     } catch {
       toast({ title: "Failed to save settings", variant: "destructive" });

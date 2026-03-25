@@ -174,6 +174,7 @@ const Customer = require("../models/Customer");
 const User = require("../models/User"); // 🔥 ADD
 
 /// ================= ADD BILL =================
+
 // exports.addBill = async (req, res) => {
 //   try {
 //     const { items, ownerMobile } = req.body;
@@ -185,7 +186,7 @@ const User = require("../models/User"); // 🔥 ADD
 //       });
 //     }
 
-//     // 🔥 USER FIND
+//     // ✅ USER CHECK (optional rakh sakta hai)
 //     const user = await User.findOne({ mobile: ownerMobile });
 
 //     if (!user) {
@@ -196,58 +197,7 @@ const User = require("../models/User"); // 🔥 ADD
 //     }
 
 //     // ===============================
-//     // 🔥 SUBSCRIPTION CHECK START
-//     // ===============================
-
-//     const subscription = user.subscription;
-
-//     // ❌ No plan active
-//     if (!subscription?.isActive) {
-//       return res.json({
-//         success: false,
-//         isLimitReached: true,
-//         message: "Please buy a plan",
-//       });
-//     }
-
-//     // ❌ Expired
-//     if (new Date(subscription.endDate) < new Date()) {
-//       return res.json({
-//         success: false,
-//         isLimitReached: true,
-//         message: "Plan expired",
-//       });
-//     }
-
-//     // 🔥 DAILY LIMIT CHECK
-//     const today = new Date();
-//     today.setHours(0, 0, 0, 0);
-
-//     const tomorrow = new Date(today);
-//     tomorrow.setDate(today.getDate() + 1);
-
-//     const todayCount = await Bill.countDocuments({
-//       ownerMobile,
-//       createdAt: {
-//         $gte: today,
-//         $lt: tomorrow,
-//       },
-//     });
-
-//     // ❌ limit hit
-//     if (
-//       subscription.dailyLimit !== -1 &&
-//       todayCount >= subscription.dailyLimit
-//     ) {
-//       return res.json({
-//         success: false,
-//         isLimitReached: true,
-//         message: "Daily limit reached",
-//       });
-//     }
-
-//     // ===============================
-//     // ✅ BILL SAVE
+//     // ✅ DIRECT BILL SAVE (NO LIMIT 🚀)
 //     // ===============================
 //     const bill = new Bill(req.body);
 //     await bill.save();
@@ -295,6 +245,8 @@ const User = require("../models/User"); // 🔥 ADD
 //   }
 // };
 
+const AppSettings = require("../models/AppSettings");
+
 exports.addBill = async (req, res) => {
   try {
     const { items, ownerMobile } = req.body;
@@ -306,7 +258,6 @@ exports.addBill = async (req, res) => {
       });
     }
 
-    // ✅ USER CHECK (optional rakh sakta hai)
     const user = await User.findOne({ mobile: ownerMobile });
 
     if (!user) {
@@ -317,14 +268,72 @@ exports.addBill = async (req, res) => {
     }
 
     // ===============================
-    // ✅ DIRECT BILL SAVE (NO LIMIT 🚀)
+    // 🔥 GET ADMIN SETTINGS
     // ===============================
+
+    let dailyLimit = 5;
+
+    const settings = await AppSettings.findOne();
+    if (settings) {
+      dailyLimit = settings.freeDailyLimit; // 🔥 dynamic
+    }
+
+    // ===============================
+    // 🔥 SUBSCRIPTION LOGIC
+    // ===============================
+
+    if (user.subscription?.isActive) {
+      // ❌ expired
+      if (new Date(user.subscription.endDate) < new Date()) {
+        return res.json({
+          success: false,
+          isLimitReached: true,
+          message: "Plan expired",
+        });
+      }
+
+      // ✅ paid user override
+      dailyLimit = user.subscription.dailyLimit;
+    }
+
+    // ===============================
+    // 🔥 DAILY COUNT
+    // ===============================
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const todayCount = await Bill.countDocuments({
+      ownerMobile,
+      createdAt: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+    });
+
+    // ❌ LIMIT HIT
+    if (dailyLimit !== -1 && todayCount >= dailyLimit) {
+      return res.json({
+        success: false,
+        isLimitReached: true,
+        message: "Daily limit reached",
+      });
+    }
+
+    // ===============================
+    // ✅ SAVE BILL
+    // ===============================
+
     const bill = new Bill(req.body);
     await bill.save();
 
     // ===============================
     // 🔥 STOCK REDUCE
     // ===============================
+
     if (items && items.length > 0) {
       for (const item of items) {
         const product = await Product.findOne({
@@ -345,14 +354,14 @@ exports.addBill = async (req, res) => {
           });
         }
 
-        product.qty = product.qty - sellQty;
+        product.qty -= sellQty;
         await product.save();
       }
     }
 
     res.json({
       success: true,
-      message: "Bill created & stock updated",
+      message: "Bill created",
       data: bill,
     });
   } catch (error) {

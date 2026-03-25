@@ -14,7 +14,7 @@ export default function PaymentsPage() {
     const fetchPayments = async () => {
       try {
         const res = await API.get("/admin/payments");
-        setPayments(res.data.data);
+        setPayments(res.data.data || []);
       } catch (e) {
         console.log("Payments error", e);
       } finally {
@@ -24,15 +24,22 @@ export default function PaymentsPage() {
 
     fetchPayments();
   }, []);
+
   const filtered = payments.filter((p) => {
     const matchStatus =
-      statusFilter === "all" || p.status.toLowerCase() === statusFilter;
-    const matchDate = !dateFilter || p.date === dateFilter;
+      statusFilter === "all" ||
+      (p.status && p.status.toLowerCase() === statusFilter);
+
+    const matchDate =
+      !dateFilter ||
+      (p.date && new Date(p.date).toISOString().slice(0, 10) === dateFilter);
+
     return matchStatus && matchDate;
   });
 
   return (
     <DashboardLayout title="Payment Logs">
+      {/* FILTER */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="date"
@@ -40,6 +47,7 @@ export default function PaymentsPage() {
           onChange={(e) => setDateFilter(e.target.value)}
           className="px-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
+
         <div className="flex gap-2">
           {["all", "success", "failed"].map((f) => (
             <button
@@ -57,6 +65,7 @@ export default function PaymentsPage() {
         </div>
       </div>
 
+      {/* TABLE */}
       <div className="bg-card rounded-xl card-shadow border border-border overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-muted-foreground text-sm">
@@ -89,26 +98,36 @@ export default function PaymentsPage() {
                   </th>
                 </tr>
               </thead>
+
               <tbody>
                 {filtered.map((p) => (
                   <tr
                     key={p.id}
                     className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                   >
+                    {/* USER */}
                     <td className="px-5 py-3.5 font-medium text-foreground">
-                      {p.userName}
+                      {p.userName || "User"}
                     </td>
+
+                    {/* MOBILE */}
                     <td className="px-5 py-3.5 font-mono text-muted-foreground">
                       {p.userMobile}
                     </td>
+
+                    {/* AMOUNT */}
                     <td className="px-5 py-3.5 font-semibold text-foreground">
-                      ₹{p.amount}
+                      ₹{p.amount?.toLocaleString()}
                     </td>
+
+                    {/* DATE */}
                     <td className="px-5 py-3.5 text-muted-foreground">
-                      {p.date}
+                      {p.date ? new Date(p.date).toLocaleDateString() : "-"}
                     </td>
+
+                    {/* STATUS */}
                     <td className="px-5 py-3.5">
-                      <StatusBadge status={p.status} />
+                      <StatusBadge status={p.status || "unknown"} />
                     </td>
                   </tr>
                 ))}
