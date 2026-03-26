@@ -12,7 +12,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://captivating-achievement-production-7fbd.up.railway.app/",
+  baseURL: "https://captivating-achievement-production-7fbd.up.railway.app",
 });
 
 export default API;
