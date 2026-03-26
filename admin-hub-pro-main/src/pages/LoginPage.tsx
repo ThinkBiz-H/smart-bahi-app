@@ -15,31 +15,36 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!email || !password) {
-      toast({ title: "Please fill in all fields", variant: "destructive" });
-      return;
-    }
+  if (!email || !password) {
+    toast({ title: "Please fill in all fields", variant: "destructive" });
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const res = await API.post("/admin/login", {
-        email,
-        password,
-      });
+  try {
+    const res = await API.post("/admin/login", {
+      email,
+      password,
+    });
 
-      login(res.data.token, res.data.admin);
-      toast({ title: "Welcome back!" });
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      toast({ title: "Invalid credentials", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
+    console.log("LOGIN RES:", res.data); // debug
+
+    login(res.data.token, res.data.admin);
+    toast({ title: "Welcome back!" });
+    navigate("/dashboard");
+  } catch (err: any) {
+    console.error("LOGIN ERROR:", err?.response || err);
+    toast({
+      title: err?.response?.data?.message || "Login failed",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
