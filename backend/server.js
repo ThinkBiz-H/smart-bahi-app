@@ -116,7 +116,7 @@
 // process.on("unhandledRejection", (err) => {
 //   console.error("❌ Unhandled Rejection:", err);
 // });
-
+//
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -144,13 +144,17 @@ connectDB();
 
 const app = express();
 
-// ================= 🔥 CORS FINAL FIX =================
+// ================= 🔥 FINAL CORS FIX =================
 
-// 👉 simplest and fully working
-app.use(cors());
+// ✅ allow all origins (safe for now)
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 
-// 👉 preflight (VERY IMPORTANT)
-app.options("/", cors());
+// ✅ HANDLE ALL PREFLIGHT REQUESTS (IMPORTANT)
 
 // ================= MIDDLEWARE =================
 
