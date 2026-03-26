@@ -25,7 +25,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await API.post("/admin", {
+      const res = await API.post("/admin/login", {
         email,
         password,
       });
