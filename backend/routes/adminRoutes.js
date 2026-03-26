@@ -45,5 +45,4 @@ router.post("/login", (req, res) => {
     message: "Invalid credentials",
   });
 });
-
 module.exports = router;
