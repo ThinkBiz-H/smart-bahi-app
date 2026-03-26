@@ -262,7 +262,7 @@ class ApiService {
   // static const String baseUrl =
   //     "https://captivating-achievement-production-7fbd.up.railway.app/api";
   static const String baseUrl =
-      "https://captivating-achievement-production-7fbd.up.railway.app/api";
+      "https://captivating-achievement-production-bcb2.up.railway.app/api";
 
   // static const String baseUrl = "http://192.168.1.4:5000/api";
   static const headers = {"Content-Type": "application/json"};
