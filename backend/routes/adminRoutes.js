@@ -29,5 +29,21 @@ router.get("/analytics", getAnalytics);
 /// ================= SETTINGS (🔥 MAIN FEATURE) =================
 router.get("/settings", getSettings);
 router.post("/settings/update", updateSettings);
+router.post("/login", (req, res) => {
+  const { email, password } = req.body;
+
+  if (email === "admin@admin.com" && password === "admin123") {
+    return res.json({
+      success: true,
+      token: "admin-token",
+      admin: { email },
+    });
+  }
+
+  return res.status(401).json({
+    success: false,
+    message: "Invalid credentials",
+  });
+});
 
 module.exports = router;
