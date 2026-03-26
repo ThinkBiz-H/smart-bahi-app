@@ -16,11 +16,14 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!email || !password) {
       toast({ title: "Please fill in all fields", variant: "destructive" });
       return;
     }
+
     setLoading(true);
+
     try {
       const res = await API.post("/admin/login", {
         email,
@@ -30,7 +33,8 @@ export default function LoginPage() {
       login(res.data.token, res.data.admin);
       toast({ title: "Welcome back!" });
       navigate("/dashboard");
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast({ title: "Invalid credentials", variant: "destructive" });
     } finally {
       setLoading(false);
